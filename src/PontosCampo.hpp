@@ -14,6 +14,8 @@
 #ifndef __PontosCampo_cpp
 #define __PontosCampo_cpp
 
+#include <cstdio>
+
 class PontosCampo {
 public:
 	PontosCampo* prox;

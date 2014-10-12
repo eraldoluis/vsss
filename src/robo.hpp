@@ -15,6 +15,7 @@
 #define __robo_cpp
 
 #include <cstdio>
+#include <opencv2/opencv.hpp>
 
 class Motor {
 private:

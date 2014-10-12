@@ -14,8 +14,11 @@
 #ifndef __Funcoes_cpp
 #define __Funcoes_cpp
 
+#include <cstdio>
+#include <opencv2/opencv.hpp>
+
 /* Le os valores do arquivo hsv.aff e cria um objeto para cada cor */
-void guardaValoresHSV() {
+Cor* guardaValoresHSV(FILE* arquivo, Cor* cores) {
 	int number[8] = { 0 };
 	int cont = 0;
 	int numero;
@@ -25,7 +28,9 @@ void guardaValoresHSV() {
 
 	while (!feof(arquivo)) {
 		fscanf(arquivo, "%d", &numero);
-		char c = fgetc(arquivo);
+
+		// Skip one character.
+		fgetc(arquivo);
 
 		if (cont == 3)
 			for (int i = 0; i < 3; i++)
@@ -44,6 +49,8 @@ void guardaValoresHSV() {
 		if (cont == 8)
 			cont = 0;
 	}
+
+	return cores;
 }
 
 CvPoint gira(CvPoint entrada, CvPoint meio, double angulo) {
@@ -61,21 +68,21 @@ CvPoint gira(CvPoint entrada, CvPoint meio, double angulo) {
 	return saida;
 }
 
-bool pixelReal(IplImage* color, int valueCor, int x, int y) {
+bool pixelReal(IplImage* color, int valueCor, int x, int y, Cor* cores) {
 	int soma = 0;
 	uchar* ptr;
 
 	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < 2; j++)// 0 0, 0 -1, -1 0, -1 -1;
-		{
+		for (int j = 0; j < 2; j++) // 0 0, 0 -1, -1 0, -1 -1;
+				{
 			ptr = cvPtr2D(color, y - i, x - j, NULL);
 			if (cores->verificaCor(ptr[0], ptr[1], ptr[2], valueCor))
 				soma++;
 		}
 	}
 	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < 2; j++)// 0 0, 0 +1, +1 0, +1 +1;
-		{
+		for (int j = 0; j < 2; j++) // 0 0, 0 +1, +1 0, +1 +1;
+				{
 			ptr = cvPtr2D(color, y + i, x + j, NULL);
 			if (cores->verificaCor(ptr[0], ptr[1], ptr[2], valueCor))
 				soma++;

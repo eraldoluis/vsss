@@ -84,17 +84,17 @@ void color(IplImage* color) {
 
 			if (i != -1) {
 				if (centroPontos->verificaTabelaCor(x, y)) {
-					if ((x > 0 && (x < (color->width - 3))) && (y > 0 && (y
-							< (color->height - 3)))) {
-						if (pixelReal(color, i, x, y)) {
+					if ((x > 0 && (x < (color->width - 3)))
+							&& (y > 0 && (y < (color->height - 3)))) {
+						if (pixelReal(color, i, x, y, cores)) {
 							int somax, somay, total;
 							somax = somay = 0;
 							total = 0;
 							b = (y - (2 * RAIO) > 0) ? y - (2 * RAIO) : 0;
-							a_max = (x + (2 * RAIO) < color->width) ? x + (2
-									* RAIO) : color->width - 1;
-							b_max = (y + (2 * RAIO) < color->height) ? y + (2
-									* RAIO) : color->height - 1;
+							a_max = (x + (2 * RAIO) < color->width) ?
+									x + (2 * RAIO) : color->width - 1;
+							b_max = (y + (2 * RAIO) < color->height) ?
+									y + (2 * RAIO) : color->height - 1;
 
 							for (; b < b_max; b++) {
 								a = (x - (2 * RAIO) > 0) ? x - (2 * RAIO) : 0;
@@ -120,7 +120,7 @@ void color(IplImage* color) {
 								centroPontos->adicinaTabelaCor(target, i);
 							}
 							break;
-						}//fim pixelReal				
+						} //fim pixelReal
 					}
 				}
 			}
@@ -162,11 +162,12 @@ int main(int argc, char* argv[]) {
 		printf("ERROR: FILE HSV NOT OPEN\n");
 		exit(1);
 	}
-	guardaValoresHSV();//Guarda valores de HSV
 
+	// Guarda valores de HSV
+	cores = guardaValoresHSV(arquivo, cores);
 
-	/* Pontos do campo */
-	pontosCampo = fopen("ARQUIVOSINFORMACAO/marc.txt", "r");
+	// Pontos do campo.
+	pontosCampo = fopen("conf/marc.txt", "r");
 	if (pontosCampo == NULL) {
 		printf("ERROR: FILE CAMPO NOT OPEN\n");
 		exit(1);
@@ -201,16 +202,14 @@ int main(int argc, char* argv[]) {
 	primeiroTempo = atoi(argv[1]) == 1 ? 1 : 0;
 	if (primeiroTempo) {
 		TIME_UM->setcentroGol(centroCampo->devolvePontoPontosCampo(8),
-				centroCampo->devolvePontoPontosCampo(11));//VERMELHO
-		TIME_UM->setcentroGolAdversario(
-				centroCampo->devolvePontoPontosCampo(2),
-				centroCampo->devolvePontoPontosCampo(5));//AZUL
+				centroCampo->devolvePontoPontosCampo(11)); //VERMELHO
+		TIME_UM->setcentroGolAdversario(centroCampo->devolvePontoPontosCampo(2),
+				centroCampo->devolvePontoPontosCampo(5)); //AZUL
 	} else {
 		TIME_UM->setcentroGol(centroCampo->devolvePontoPontosCampo(2),
-				centroCampo->devolvePontoPontosCampo(5));//VERMELHO
-		TIME_UM->setcentroGolAdversario(
-				centroCampo->devolvePontoPontosCampo(8),
-				centroCampo->devolvePontoPontosCampo(11));//AZUL
+				centroCampo->devolvePontoPontosCampo(5)); //VERMELHO
+		TIME_UM->setcentroGolAdversario(centroCampo->devolvePontoPontosCampo(8),
+				centroCampo->devolvePontoPontosCampo(11)); //AZUL
 	}
 
 	/* Define os pontos de centro do campo, metade de cima, metade de baixo */
@@ -262,41 +261,42 @@ int main(int argc, char* argv[]) {
 
 			TIME_UM->run(frame, primeiroTempo, COMRobo);
 
-
 			/* Autoriza enviar os comandos */
 			Comunicacao::enviarPacote = true;
 
 			/* Exibe o ponto da bola */
-			cvCircle(frame, centroPontos->tabelaCores[4]->ponto, 0, cvScalar(255,
-					255, 0), 10, 1, 0);
+			cvCircle(frame, centroPontos->tabelaCores[4]->ponto, 0,
+					cvScalar(255, 255, 0), 10, 1, 0);
 
-		}else{
+		} else {
 			/* Autoriza enviar os comandos */
 			Comunicacao::enviarPacote = true;
-			for (int i=0; i<100; i++)
+			for (int i = 0; i < 100; i++)
 				TIME_UM->parar();
 		}
 
 		/* Exibe os pontos na imagem */
-		cvCircle(frame, TIME_UM->getCentroGol(), 0, cvScalar(0, 0, 0), 10, 1, 0);
-		cvCircle(frame, TIME_UM->getCentroGolAdversario(), 0, cvScalar(0, 255,
-				255), 10, 1, 0);
+		cvCircle(frame, TIME_UM->getCentroGol(), 0, cvScalar(0, 0, 0), 10, 1,
+				0);
+		cvCircle(frame, TIME_UM->getCentroGolAdversario(), 0,
+				cvScalar(0, 255, 255), 10, 1, 0);
 
 		cvCircle(frame, TIME_UM->metadeCampoCima, 0, cvScalar(0, 255, 255), 10,
 				1, 0);
-		cvCircle(frame, TIME_UM->metadeCampoBaixo, 0, cvScalar(0, 255, 255),
-				10, 1, 0);
-		cvCircle(frame, TIME_UM->metadeTudo, 0, cvScalar(0, 255, 255), 10, 1, 0);
+		cvCircle(frame, TIME_UM->metadeCampoBaixo, 0, cvScalar(0, 255, 255), 10,
+				1, 0);
+		cvCircle(frame, TIME_UM->metadeTudo, 0, cvScalar(0, 255, 255), 10, 1,
+				0);
 
-		cvCircle(frame, centroCampo->devolvePontoPontosCampo(2), 0, cvScalar(
-				255, 0, 0), 10, 1, 0);
-		cvCircle(frame, centroCampo->devolvePontoPontosCampo(5), 0, cvScalar(
-				255, 0, 0), 10, 1, 0);
+		cvCircle(frame, centroCampo->devolvePontoPontosCampo(2), 0,
+				cvScalar(255, 0, 0), 10, 1, 0);
+		cvCircle(frame, centroCampo->devolvePontoPontosCampo(5), 0,
+				cvScalar(255, 0, 0), 10, 1, 0);
 
-		cvCircle(frame, centroCampo->devolvePontoPontosCampo(8), 0, cvScalar(0,
-				0, 255), 10, 1, 0);
-		cvCircle(frame, centroCampo->devolvePontoPontosCampo(11), 0, cvScalar(
-				0, 0, 255), 10, 1, 0);
+		cvCircle(frame, centroCampo->devolvePontoPontosCampo(8), 0,
+				cvScalar(0, 0, 255), 10, 1, 0);
+		cvCircle(frame, centroCampo->devolvePontoPontosCampo(11), 0,
+				cvScalar(0, 0, 255), 10, 1, 0);
 
 		/* Exibe o frame atual na janela */
 		cvShowImage("Color", frame);

@@ -15,6 +15,8 @@
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
+#include <opencv2/opencv.hpp>
+
 //////////////////////////////////////////////////////////
 //
 // Vector2D: vector 2D class

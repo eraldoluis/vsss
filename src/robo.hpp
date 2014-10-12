@@ -14,6 +14,8 @@
 #ifndef __robo_cpp
 #define __robo_cpp
 
+#include <cstdio>
+
 class Motor {
 private:
 	int velocidade;

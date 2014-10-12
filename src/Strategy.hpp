@@ -11,8 +11,8 @@
 //|					Luiz Henrique Claudino Silva	|
 //[]-----------------------------------------------[]
 
-#ifndef __Strategy_cpp
-#define __Strategy_cpp
+#ifndef __Strategy_hpp
+#define __Strategy_hpp
 
 class Strategy {
 private:
@@ -192,7 +192,7 @@ public:
 			return (sen * 90) + 90;
 		else if (sen <= 0 && sen >= -1 && cos >= -1 && cos <= 0)
 			return (sen * 90) * (-1) + 180;
-		else if (cos >= 0 and cos <= 1 && sen >= -1 && sen <= 0)
+		else // if (cos >= 0 and cos <= 1 && sen >= -1 && sen <= 0)
 			return (cos * 90) + 270;
 	}
 
@@ -679,4 +679,4 @@ public:
 	}*/
 };
 
-#endif //Strategy_cpp
+#endif //Strategy_hpp

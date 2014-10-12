@@ -12,9 +12,9 @@
 //  ========
 //  Source file for vector 2D.
 
-#ifndef VECTOR_H_
-#include "Vector.h"
-#endif
+#include "Vector.hpp"
+
+#include <cmath>
 
 //////////////////////////////////////////////////////////
 //

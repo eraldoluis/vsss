@@ -12,57 +12,33 @@
 //[]-----------------------------------------------[]
 
 /* Libs */
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+//#include <opencv/cv.h>
+//#include <opencv/highgui.h>
+
+#include <opencv2/opencv.hpp>
+
 #include <unistd.h>
 #include <list>
 #include <fcntl.h>   /* File control definitions */
 #include <termios.h> /* POSIX terminal control definitions */
 
-#include "Configuracoes.h"
+#include "Configuracoes.hpp"
+#include "Cor.hpp"
+#include "CentroCor.hpp"
+#include "TabelaCor.hpp"
+#include "PontosCampo.hpp"
+#include "Funcoes.hpp"
+#include "Vector.hpp"
+#include "robo.hpp"
+#include "Comunicacao.hpp"
+#include "Strategy.hpp"
 
 using namespace std;
 
 FILE* arquivo;
 FILE* pontosCampo;
 
-#ifndef __Cor_cpp
-#include "Cor.cpp"
-#endif
-
 Cor* cores = NULL;
-
-#ifndef __CentroCor_cpp
-#include "CentroCor.cpp"
-#endif
-
-#ifndef __TabelaCor_cpp
-#include "TabelaCor.cpp"
-#endif
-
-#ifndef __PontosCampo_cpp
-#include "PontosCampo.cpp"
-#endif
-
-#ifndef __Funcoes_cpp
-#include "Funcoes.cpp"
-#endif
-
-#ifndef VECTOR_H_
-#include "Vector.cpp"
-#endif
-
-#ifndef __robo_cpp
-#include "robo.cpp"
-#endif
-
-#ifndef __Comunicacao_cpp
-#include "Comunicacao.cpp"
-#endif
-
-#ifndef __Strategy_cpp
-#include "Strategy.cpp"
-#endif
 
 IplImage* frame;
 

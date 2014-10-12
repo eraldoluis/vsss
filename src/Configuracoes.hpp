@@ -11,6 +11,8 @@
 //|					Luiz Henrique Claudino Silva	|
 //[]-----------------------------------------------[]
 
+#ifndef __Configuracoes_hpp
+#define __Configuracoes_hpp
 
 ////////////////////////////////////////////////////////////////////////////////
 //Quantidades e Tamanhos
@@ -42,3 +44,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 #define FRENTE 0
 #define TRAS 1
+
+
+#endif // __Configuracoes_hpp

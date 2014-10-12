@@ -1,0 +1,7 @@
+all: vsss
+
+vsss: vsss.o
+	g++ vsss.cpp `pkg-config --cflags opencv` `pkg-config --libs opencv` -o vsss 
+
+clean:
+	rm -rf *o vsss

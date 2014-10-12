@@ -1,0 +1,89 @@
+Caminho.cpp
+Classe com atributos from e to, esta é responsável por retornar os pontos de caminho para o robô e distancia entre esses pontos
+
+Atributos: 
+	from e to
+
+Métodos:	
+	getDistanciaCaminho(): retorna a distancia entre dois pontos
+	getCaminho(): retorna os pontos de onde o robo esta e de objetivo
+	getProximoPontoCaminho(): responsável por gerar um novo ponto de objetivo
+	atualizaEstadoCaminho(): atualiza os pontos de um ponto
+
+
+
+Comunicacao.cpp
+Classe responsável pela comunicação entre o computador e os robôs, ela herda da função robo
+
+Atributos:
+	robo1, robo2 e robo3
+
+Métodos:
+	abrePortaSerialComunicacao(): abre a porta serial para a comunicacao
+	configuraComunicacao(): faz a configuracao de todos os dados de comunicacao
+	copiaProfunda(): copia para cada atributo da classe seu respectivo pacote
+	enviaDadosRobo(): evia os pacote para cada robo
+	getFileDescriptor(): retorna o FileDescriptor
+
+
+
+
+Configuracoes.h
+Define as contantes do software
+
+
+
+
+Cor.cpp
+Classe responsável por definir o que é uma cor, criando um objeto do tipo cor
+
+Atributos:
+	HSVMin, HSVMax, idCor, *prox(ponteiro para proxima cor)
+
+Métodos:
+	adicionaCor(): cria um novo objeto cor e adiciona ao final da fila de cor essa nova cor
+	verificaHSVCor(): Verifica se a cor do pixel atual corresponde a alguma das cores mapeadas, caso seja, retorna o id respectivo a desta cor
+	verificaCor(): Verifica se a cor do pixel atual corresponde a alguma das cores mapeadas, verifica também se o id da cor é o mesmo, e responde se os valores correspondem
+
+
+
+
+
+funcoes.cpp
+Função que contém algumas das funções genéricas usadas pela maioria das classes
+
+Métodos:
+	guardaValoresHSV(): le os valores do arquivo "hsv.aff" e cria um objeto para cada cor
+	gira(): ? 
+	pixelReal(): ?
+	tamanhoVetor(): retorna o tamanho do vetor de dois pontos
+	produtoEscalar(): retornao produto escalar de dois pontos
+
+
+
+
+
+
+
+PontosCampo.cpp
+Classe que salva em um objeto os pontos do campo, pontos este lidos do arquivo "marc.txt"
+
+Atributos:
+	ponto e *prox (ponteiro para proximo ponto)
+
+Métodos:
+	substituiPontosCampo(): altera o ponto do objeto por um novo ponto
+	adicionaPontosCampo(): cria um novo objeto pontoscampo e adiciona ao final da fila de pontoscampo esse novo ponto
+	guardaPontosCampo(): le os valores do arquivo "marc.txt" e cria um objeto para cada ponto
+	devolvePontoPontosCampo(): devolve os pontos de um ponto do campo
+
+
+
+
+
+
+TabelaCor.cpp
+Classe responsável por armazenar uma tabela com as cores mapeadas
+
+Atributos:
+	*tabelaCores[8]

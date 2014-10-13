@@ -169,4 +169,107 @@ public:
 
 };
 
+/*
+ * Inline methods.
+ */
+inline
+unsigned char Robo::getMotorRobo() {
+	return motor;
+}
+
+inline
+CvPoint Robo::getFrenteRobo() {
+	return frenteRobo;
+}
+
+inline
+CvPoint Robo::getCentroAtualRobo() {
+	return this->centroAtualRobo;
+}
+
+inline
+CvPoint Robo::getLadoRobo() {
+	return this->ladoRobo;
+}
+
+inline
+int Robo::getCorTime() {
+	return this->corTime;
+}
+
+inline
+int Robo::getCorRobo() {
+	return this->corRobo;
+}
+
+inline
+bool Robo::getRoboPerdido() {
+	return this->roboPerdido;
+}
+
+inline
+void Robo::setIdRobo(int idRobo) {
+	this->idRobo = idRobo;
+}
+
+inline
+void Robo::setFenteRobo(CvPoint ponto) {
+	this->frenteRobo.x = ponto.x;
+	this->frenteRobo.y = ponto.y;
+}
+
+inline
+void Robo::setcentroAtualRobo(CvPoint ponto) {
+	this->centroAnteriorRobo.x = this->centroAtualRobo.x;
+	this->centroAnteriorRobo.y = this->centroAtualRobo.y;
+
+	this->centroAtualRobo.x = ponto.x;
+	this->centroAtualRobo.y = ponto.y;
+}
+
+inline
+void Robo::setCorTimeRobo(int corTime) {
+	this->corTime = corTime;
+}
+
+inline
+void Robo::setCorRobo(int corRobo) {
+	this->corRobo = corRobo;
+}
+
+inline
+void Robo::setLadoRobo(CvPoint ladoRobo) {
+	this->ladoRobo = ladoRobo;
+}
+
+inline
+void Robo::setMotorRobo() {
+	traduzirComandos();
+
+	if ((centroAnteriorRobo.x <= centroAtualRobo.x + 2
+			&& centroAnteriorRobo.x >= centroAtualRobo.x - 2)
+			&& (centroAnteriorRobo.y <= centroAtualRobo.y + 2
+					&& centroAnteriorRobo.y >= centroAtualRobo.y - 2)
+			&& !roboPreso)
+		this->frames++;
+	else
+		this->frames = 0;
+}
+
+inline
+void Robo::setTempoAnteriorRobo(double tempoAnterior) {
+	this->tempoAnteriorRobo = tempoAnteriorRobo;
+}
+
+inline
+void Robo::setTempoAtualRobo(double tempoAtual) {
+	this->tempoAtualRobo = tempoAtualRobo;
+}
+
+inline
+void Robo::setRoboPerdido(bool roboPerdido) {
+	this->roboPerdido = roboPerdido;
+}
+
+
 #endif //__robo_hpp

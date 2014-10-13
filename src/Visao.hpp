@@ -17,6 +17,9 @@
 #include "PontosCampo.hpp"
 #include "TabelaCor.hpp"
 
+/*
+ * Controla o acesso a câmera e realiza o reconhecimento dos objetos no campo.
+ */
 class Visao {
 
 public:
@@ -42,37 +45,37 @@ public:
 	/*
 	 * Método responsável por reconhecer os jogadores e a bola.
 	 */
-	void color(IplImage* color) {
+	void reconhece() {
 		uchar* ptr;
 		int a, b, a_max, b_max;
 
 		// Percorre toda a imagem.
-		for (int y = 0; y < color->height; y++) {
-			for (int x = 0; x < color->width; x++) {
+		for (int y = 0; y < hsv_frame->height; y++) {
+			for (int x = 0; x < hsv_frame->width; x++) {
 				// Cor do pixel (x, y).
-				ptr = cvPtr2D(color, y, x, NULL);
+				ptr = cvPtr2D(hsv_frame, y, x, NULL);
 
 				int i = cores->verificaHSVCor(ptr[0], ptr[1], ptr[2]);
 
 				if (i != -1) {
 					if (centroPontos.verificaTabelaCor(x, y)) {
-						if ((x > 0 && (x < (color->width - 3)))
-								&& (y > 0 && (y < (color->height - 3)))) {
-							if (pixelReal(color, i, x, y, cores)) {
+						if ((x > 0 && (x < (hsv_frame->width - 3)))
+								&& (y > 0 && (y < (hsv_frame->height - 3)))) {
+							if (pixelReal(hsv_frame, i, x, y, cores)) {
 								int somax, somay, total;
 								somax = somay = 0;
 								total = 0;
 								b = (y - (2 * RAIO) > 0) ? y - (2 * RAIO) : 0;
-								a_max = (x + (2 * RAIO) < color->width) ?
-										x + (2 * RAIO) : color->width - 1;
-								b_max = (y + (2 * RAIO) < color->height) ?
-										y + (2 * RAIO) : color->height - 1;
+								a_max = (x + (2 * RAIO) < hsv_frame->width) ?
+										x + (2 * RAIO) : hsv_frame->width - 1;
+								b_max = (y + (2 * RAIO) < hsv_frame->height) ?
+										y + (2 * RAIO) : hsv_frame->height - 1;
 
 								for (; b < b_max; b++) {
 									a = (x - (2 * RAIO) > 0) ?
 											x - (2 * RAIO) : 0;
 									for (; a < a_max; a++) {
-										ptr = cvPtr2D(color, b, a, NULL);
+										ptr = cvPtr2D(hsv_frame, b, a, NULL);
 
 										if (cores->verificaCor(ptr[0], ptr[1],
 												ptr[2], i)) {
@@ -197,8 +200,8 @@ public:
 			return false;
 		// Converte o frame em formato HSV.
 		cvCvtColor(frame, hsv_frame, CV_BGR2HSV);
-		// Busca robôs na imagem capturada.
-		color(hsv_frame);
+		// Reconhece elementos no frame.
+		reconhece();
 		return true;
 	}
 

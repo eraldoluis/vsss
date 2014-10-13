@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 	Visao visao;
 
 	// Estratégia.
-	Strategy TIME_UM(visao);
+	Strategy estrategia(visao);
 
 	// Valores do HSV.
 	if (!visao.leValoresHSV("conf/hsv.arff")) {
@@ -81,46 +81,13 @@ int main(int argc, char* argv[]) {
 	if (argc > 1)
 		primeiroTempo = (atoi(argv[1]) == 1);
 
-	if (primeiroTempo) {
-		TIME_UM.setcentroGol(visao.centroCampo.devolvePontoPontosCampo(8),
-				visao.centroCampo.devolvePontoPontosCampo(11)); //VERMELHO
-		TIME_UM.setcentroGolAdversario(
-				visao.centroCampo.devolvePontoPontosCampo(2),
-				visao.centroCampo.devolvePontoPontosCampo(5)); //AZUL
-	} else {
-		TIME_UM.setcentroGol(visao.centroCampo.devolvePontoPontosCampo(2),
-				visao.centroCampo.devolvePontoPontosCampo(5)); //VERMELHO
-		TIME_UM.setcentroGolAdversario(
-				visao.centroCampo.devolvePontoPontosCampo(8),
-				visao.centroCampo.devolvePontoPontosCampo(11)); //AZUL
-	}
-
-	/* Define os pontos de centro do campo, metade de cima, metade de baixo */
-	TIME_UM.metadeCampoCima.x = (visao.centroCampo.devolvePontoPontosCampo(1).x
-			- visao.centroCampo.devolvePontoPontosCampo(0).x) / 2
-			+ visao.centroCampo.devolvePontoPontosCampo(0).x;
-	TIME_UM.metadeCampoCima.y = (visao.centroCampo.devolvePontoPontosCampo(1).y
-			- visao.centroCampo.devolvePontoPontosCampo(0).y) / 2
-			+ visao.centroCampo.devolvePontoPontosCampo(0).y;
-
-	TIME_UM.metadeCampoBaixo.x = (visao.centroCampo.devolvePontoPontosCampo(6).x
-			- visao.centroCampo.devolvePontoPontosCampo(7).x) / 2
-			+ visao.centroCampo.devolvePontoPontosCampo(7).x;
-	TIME_UM.metadeCampoBaixo.y = (visao.centroCampo.devolvePontoPontosCampo(6).y
-			- visao.centroCampo.devolvePontoPontosCampo(7).y) / 2
-			+ visao.centroCampo.devolvePontoPontosCampo(7).y;
-
-	TIME_UM.metadeTudo.x = (TIME_UM.metadeCampoCima.x
-			- TIME_UM.metadeCampoBaixo.x) / 2 + TIME_UM.metadeCampoBaixo.x;
-	TIME_UM.metadeTudo.y = (TIME_UM.metadeCampoCima.y
-			- TIME_UM.metadeCampoBaixo.y) / 2 + TIME_UM.metadeCampoBaixo.y;
-
-	TIME_UM.calculaPontoAtrasGol();
-	TIME_UM.getteam()[1]->chutar();
+	// Inicializa estratégia.
+	estrategia.inicializa(primeiroTempo);
 
 	/* Programa executando */
 	while (1) {
 
+		// Captura e processa novo frame.
 		if (!visao.captura()) {
 			fprintf(stderr, "ERROR: frame is null...\n");
 			break;
@@ -129,12 +96,12 @@ int main(int argc, char* argv[]) {
 		/* Chama a estrategia caso a bola nao esteja perdida */
 		if ((visao.centroPontos.tabelaCores[4] != NULL)) {
 			/* Seta os pontos da bola */
-			TIME_UM.setBola(visao.centroPontos.tabelaCores[4]->ponto);
+			estrategia.setBola(visao.centroPontos.tabelaCores[4]->ponto);
 
-			TIME_UM.run(visao.frame, primeiroTempo);
+			estrategia.run(visao.frame, primeiroTempo);
 
 			// Envia novos comandos para os robôs.
-			com.enviaDadosRobo(TIME_UM.getteam());
+			com.enviaDadosRobo(estrategia.getteam());
 
 			/* Exibe o ponto da bola */
 			cvCircle(visao.frame, visao.centroPontos.tabelaCores[4]->ponto, 0,
@@ -142,22 +109,24 @@ int main(int argc, char* argv[]) {
 
 		} else {
 			// Envia novos comandos para os robôs.
-			com.enviaDadosRobo(TIME_UM.getteam());
+			com.enviaDadosRobo(estrategia.getteam());
 			// Para todos os robôs (100 vezes!?).
 			for (int i = 0; i < 100; i++)
-				TIME_UM.parar();
+				estrategia.parar();
 		}
 
 		/* Exibe os pontos na imagem */
-		cvCircle(visao.frame, TIME_UM.getCentroGol(), 0, cvScalar(0, 0, 0), 10, 1, 0);
-		cvCircle(visao.frame, TIME_UM.getCentroGolAdversario(), 0,
+		cvCircle(visao.frame, estrategia.getCentroGol(), 0, cvScalar(0, 0, 0), 10,
+				1, 0);
+		cvCircle(visao.frame, estrategia.getCentroGolAdversario(), 0,
 				cvScalar(0, 255, 255), 10, 1, 0);
 
-		cvCircle(visao.frame, TIME_UM.metadeCampoCima, 0, cvScalar(0, 255, 255), 10,
+		cvCircle(visao.frame, estrategia.metadeCampoCima, 0, cvScalar(0, 255, 255),
+				10, 1, 0);
+		cvCircle(visao.frame, estrategia.metadeCampoBaixo, 0,
+				cvScalar(0, 255, 255), 10, 1, 0);
+		cvCircle(visao.frame, estrategia.metadeTudo, 0, cvScalar(0, 255, 255), 10,
 				1, 0);
-		cvCircle(visao.frame, TIME_UM.metadeCampoBaixo, 0, cvScalar(0, 255, 255), 10,
-				1, 0);
-		cvCircle(visao.frame, TIME_UM.metadeTudo, 0, cvScalar(0, 255, 255), 10, 1, 0);
 
 		cvCircle(visao.frame, visao.centroCampo.devolvePontoPontosCampo(2), 0,
 				cvScalar(255, 0, 0), 10, 1, 0);
@@ -180,38 +149,34 @@ int main(int argc, char* argv[]) {
 			break;
 	}
 
-	// STEP 1. Create simulator
-	MoveRLSimulator* moveSimulator = new MoveRLSimulator(visao);
-
-	// STEP 2. Create linear approximator (see documentation to change this to a multi-layer perceptron)
-	Approximator* neuralNet = new NeuralNetBatch(moveSimulator->getObsRows(),
-			moveSimulator->getNumActions());
-
-	// STEP 3. Create a controller (implement different algorithms here)
-	Controller* controller;
-	//    if (ALGORITHM == NAC) {
-	// Create Natural Actor-Critic controller
-	//      controller = new NACTransform(new BasicController(neuralNet), mySimulator->getDiscountFactor());
-	//   }
-	//    else {
-	// Create alternative LSPI controller
-	controller = new LSTDQController(neuralNet,
-			new eGreedyPolicy(EXPLORATION_PROB),
-			moveSimulator->getDiscountFactor());
-	//    }
-
-	// STEP 4. Link all together with an algorithm
-	RLAlg* alg = new GOALPomdp(controller, moveSimulator, LAMBDA, STEP_SIZE);
-
-	// Indicate to automatically save the parameters whenever performance improves
-	if (argc > 1)
-		alg->saveBest(argv[1]);
-
-	// STEP 5. Learn!
-	alg->learn(EPOCH_STEPS, MAX_TIME, MAX_STEPS);
+//	// STEP 1. Create simulator
+//	MoveRLSimulator* moveSimulator = new MoveRLSimulator(visao);
+//
+//	// STEP 2. Create linear approximator (see documentation to change this to a multi-layer perceptron)
+//	Approximator* neuralNet = new NeuralNetBatch(moveSimulator->getObsRows(),
+//			moveSimulator->getNumActions());
+//
+//	// STEP 3. Create a controller (implement different algorithms here)
+//	Controller* controller;
+//	// Create Natural Actor-Critic controller
+//	// controller = new NACTransform(new BasicController(neuralNet), mySimulator->getDiscountFactor());
+//	// Create LSPI controller
+//	controller = new LSTDQController(neuralNet,
+//			new eGreedyPolicy(EXPLORATION_PROB),
+//			moveSimulator->getDiscountFactor());
+//
+//	// STEP 4. Link all together with an algorithm
+//	RLAlg* alg = new GOALPomdp(controller, moveSimulator, LAMBDA, STEP_SIZE);
+//
+//	// Indicate to automatically save the parameters whenever performance improves
+//	if (argc > 1)
+//		alg->saveBest(argv[1]);
+//
+//	// STEP 5. Learn!
+//	alg->learn(EPOCH_STEPS, MAX_TIME, MAX_STEPS);
 
 	// Para todos os robôs.
-	TIME_UM.parar();
+	estrategia.parar();
 	sleep(1);
 
 	// Finaliza thread de comunicação.

@@ -35,7 +35,22 @@ Robo::Robo() :
 }
 
 Robo::Robo(int id, int time, int corRobo) {
-	Robo();
+	frames = 0;
+	comandoAnteriorRobo = 0;
+	roboPerdido = false;
+	mira = chute = false;
+	segundoPonto = false;
+	volta = false;
+	countCommands = 0;
+	qtdAnguloIgual = 0;
+	qtdFrameParado = 0;
+	qtdvolta = 0;
+	comandoAnteriorRobo = 0;
+	roboPerdido = false;
+	roboPreso = false;
+	frames = 0;
+	liberar = 0;
+	flag = 0;
 	setIdRobo(id);
 	setCorTimeRobo(time);
 	setCorRobo(corRobo);

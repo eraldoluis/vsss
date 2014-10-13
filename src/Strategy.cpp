@@ -7,6 +7,49 @@
 
 #include "Strategy.hpp"
 
+void Strategy::inicializa(bool primeiroTempo) {
+	if (primeiroTempo) {
+		setcentroGol(visao.centroCampo.devolvePontoPontosCampo(8),
+				visao.centroCampo.devolvePontoPontosCampo(11)); //VERMELHO
+		setcentroGolAdversario(
+				visao.centroCampo.devolvePontoPontosCampo(2),
+				visao.centroCampo.devolvePontoPontosCampo(5)); //AZUL
+	} else {
+		setcentroGol(visao.centroCampo.devolvePontoPontosCampo(2),
+				visao.centroCampo.devolvePontoPontosCampo(5)); //VERMELHO
+		setcentroGolAdversario(
+				visao.centroCampo.devolvePontoPontosCampo(8),
+				visao.centroCampo.devolvePontoPontosCampo(11)); //AZUL
+	}
+
+	/* Define os pontos de centro do campo, metade de cima, metade de baixo */
+	metadeCampoCima.x =
+			(visao.centroCampo.devolvePontoPontosCampo(1).x
+					- visao.centroCampo.devolvePontoPontosCampo(0).x) / 2
+					+ visao.centroCampo.devolvePontoPontosCampo(0).x;
+	metadeCampoCima.y =
+			(visao.centroCampo.devolvePontoPontosCampo(1).y
+					- visao.centroCampo.devolvePontoPontosCampo(0).y) / 2
+					+ visao.centroCampo.devolvePontoPontosCampo(0).y;
+
+	metadeCampoBaixo.x = (visao.centroCampo.devolvePontoPontosCampo(
+			6).x - visao.centroCampo.devolvePontoPontosCampo(7).x) / 2
+			+ visao.centroCampo.devolvePontoPontosCampo(7).x;
+	metadeCampoBaixo.y = (visao.centroCampo.devolvePontoPontosCampo(
+			6).y - visao.centroCampo.devolvePontoPontosCampo(7).y) / 2
+			+ visao.centroCampo.devolvePontoPontosCampo(7).y;
+
+	metadeTudo.x = (metadeCampoCima.x
+			- metadeCampoBaixo.x) / 2
+			+ metadeCampoBaixo.x;
+	metadeTudo.y = (metadeCampoCima.y
+			- metadeCampoBaixo.y) / 2
+			+ metadeCampoBaixo.y;
+
+	calculaPontoAtrasGol();
+	getteam()[1]->chutar();
+}
+
 void Strategy::calculaPontoAtrasGol() {
 	/* if e else para parametrizar o fundo do gol para o primeiro e segundo tempo */
 	if (centroGolAdversario.x > metadeTudo.x) {

@@ -34,6 +34,8 @@ private:
 	CvPoint atrasGolAdversario;
 	CvPoint atrasGol;
 
+	Visao& visao;
+
 public:
 	CvPoint metadeCampoCima;
 	CvPoint metadeCampoBaixo;
@@ -46,11 +48,7 @@ public:
 
 	CvPoint A1, A2, A3, A4;
 
-	/* Construtor */
-	Strategy() {
-	}
-
-	Strategy(Visao& visao) {
+	Strategy(Visao& visao) : visao(visao) {
 		/* coloca a configuração do robo 1 na posição 0 do vetor */
 		team[0] = &visao.ROBO_UM;
 		team[1] = &visao.ROBO_DOIS;
@@ -58,6 +56,8 @@ public:
 		primeiroPonto = false;
 		flag = 0;
 	}
+
+	void inicializa(bool primeiroTempo);
 
 	void setExtremidades();
 

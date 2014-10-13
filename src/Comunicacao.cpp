@@ -46,7 +46,7 @@ int Comunicacao::inicia() {
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	finalizada = false;
-	return pthread_create(&tid, &attr, bridge, 0);
+	return pthread_create(&tid, &attr, bridge, this);
 }
 
 void Comunicacao::abrePortaSerialComunicacao() {

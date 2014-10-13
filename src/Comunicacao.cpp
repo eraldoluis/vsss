@@ -22,17 +22,26 @@
  */
 void* bridge(void* args) {
 	((Comunicacao*) args)->loop();
-	pthread_exit(0);
+	pthread_exit(NULL);
 }
 
 Comunicacao::Comunicacao(const char* porta) :
 		porta(porta), fd(-1), finalizada(false) {
+	// Inicializa lock.
+	pthread_mutex_init(&bufferLock, NULL);
+}
+
+Comunicacao::~Comunicacao() {
+	// Libera mutex.
+	pthread_mutex_destroy(&bufferLock);
 }
 
 void Comunicacao::loop() {
 	// Envia dados enquanto o programa estiver rodando.
 	while (!finalizada) {
+		pthread_mutex_lock(&bufferLock);
 		write(this->fd, byte, 4);
+		pthread_mutex_unlock(&bufferLock);
 		usleep(9000);
 	}
 }
@@ -81,11 +90,13 @@ void Comunicacao::configuraComunicacao() {
 }
 
 void Comunicacao::enviaDadosRobo(Robo** time) {
+	pthread_mutex_lock(&bufferLock);
 	// Copia atributos dos robôs para o buffer de comunicação.
 	byte[0] = time[0]->getMotorRobo() & 0x7F;
 	byte[1] = time[1]->getMotorRobo() | 0x80;
 	byte[2] = time[2]->getMotorRobo() | 0x80;
 	byte[3] = (byte[0] ^ byte[1] ^ byte[2]) | 0x80;
+	pthread_mutex_unlock(&bufferLock);
 }
 
 void Comunicacao::finaliza() {

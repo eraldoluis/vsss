@@ -333,8 +333,8 @@ bool Robo::seguirPonto(CvPoint metadeCampoBaixo, CvPoint alvo, CvPoint trave,
 
 	float dist;
 
-	printf("centro.x %d\n", metadeCampoBaixo.x);
-	printf("centro.y %d\n", metadeCampoBaixo.y);
+	//printf("centro.x %d\n", metadeCampoBaixo.x);
+	//printf("centro.y %d\n", metadeCampoBaixo.y);
 
 	dist = distancia(centroAtualRobo, alvo);
 

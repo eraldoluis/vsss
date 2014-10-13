@@ -16,6 +16,9 @@
 #include "Configuracoes.hpp"
 #include "PontosCampo.hpp"
 #include "TabelaCor.hpp"
+#include "Robo.hpp"
+#include "Cor.hpp"
+#include "Funcoes.hpp"
 
 /*
  * Controla o acesso a câmera e realiza o reconhecimento dos objetos no campo.
@@ -39,7 +42,8 @@ public:
 
 	Visao() :
 			ROBO_UM(0, COR_TIME_UM, COR_ROBO_UM), ROBO_DOIS(1, COR_TIME_UM,
-			COR_ROBO_DOIS), ROBO_TRES(2, COR_TIME_UM, COR_ROBO_TRES) {
+			COR_ROBO_DOIS), ROBO_TRES(2, COR_TIME_UM, COR_ROBO_TRES), capture(
+					NULL), frame(NULL), hsv_frame(NULL), cores(NULL) {
 	}
 
 	/*
@@ -172,7 +176,7 @@ public:
 	 */
 	bool lePontosDoCampo(const char* nomeArquivo) {
 		// Pontos do campo.
-		FILE* pontosCampo = fopen("conf/marc.txt", "r");
+		FILE* pontosCampo = fopen(nomeArquivo, "r");
 		if (pontosCampo == NULL)
 			return false;
 		centroCampo.lePontosCampo(pontosCampo);

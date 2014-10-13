@@ -32,6 +32,8 @@ private:
 	 */
 	pthread_t tid;
 
+	pthread_mutex_t bufferLock;
+
 	/*
 	 * File descriptor da porta de comunicação.
 	 */
@@ -75,6 +77,8 @@ private:
 public:
 	/* Construtor */
 	Comunicacao(const char* porta);
+
+	~Comunicacao();
 
 	/*
 	 * Inicia thread de comunicação.

@@ -29,7 +29,7 @@ public:
 	CvPoint ponto;
 
 	/* Construtor */
-	PontosCampo() {
+	PontosCampo() : prox(NULL) {
 	}
 
 	PontosCampo(CvPoint novo) {

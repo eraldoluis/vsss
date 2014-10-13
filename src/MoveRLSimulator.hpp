@@ -8,13 +8,19 @@
 #ifndef MOVERLSIMULATOR_HPP_
 #define MOVERLSIMULATOR_HPP_
 
+#include <opencv2/core/core_c.h>
+
 #include <PGBasics.hh>
-#include <NeuralNetBatch.hh>
-#include <eGreedyPolicy.hh>
-#include <LSTDQController.hh>
-#include <OLPomdp.hh>
-#include <GOALPomdp.hh>
 #include <Simulator.hh>
+
+#include <cstdlib>
+#include <cmath>
+#include <time.h>
+
+#include "Vector.hpp"
+#include "Visao.hpp"
+#include "Comunicacao.hpp"
+#include "Strategy.hpp"
 
 using namespace libpg;
 
@@ -67,35 +73,56 @@ using namespace libpg;
  */
 class MoveRLSimulator: public libpg::Simulator {
 
+private:
+
+	/*
+	 * Tolerância para considerar que o robô chegou no target.
+	 */
+	static const int TOL = 10;
+
 public:
+
+	Visao& visao;
+	Comunicacao& com;
+	Strategy& estrategia;
+
+	int distTarget;
 
 	// Estado anterior.
 	double angToTarget;
-	double distToTaget;
+	double distToTarget;
 	double angSpeed;
 	double spatialSpeed;
 	bool onTarget;
 
 	CvPoint target;
 
-	int distTarget;
-
-	Visao& visao;
+	Robo& robo;
 
 	/**
 	 * Constructor for your simulator. Do any once off
 	 * initialisation. Read data files, allocate memory, stuff like that.
 	 * Can be left empty if need be.
 	 */
-	MoveRLSimulator(Visao& visao) : visao(visao) {
-		onTarget = false;
-		// Gera primeiro target.
-		target.x = visao.ROBO_UM.getCentroAtualRobo().x + 10;
-		target.y = visao.ROBO_UM.getCentroAtualRobo().y - 10;
+	MoveRLSimulator(Visao& visao, Comunicacao& com, Strategy& estrategia, Robo& robo) :
+			visao(visao), com(com), estrategia(estrategia), distTarget(50), angToTarget(
+					0), distToTarget(0), angSpeed(0), spatialSpeed(0), onTarget(
+					false), robo(robo) {
+		srand(time(NULL));
 	}
 
 	// Empty desctructor. Fill in if you need to deallocate stuff.
 	virtual ~MoveRLSimulator() {
+	}
+
+	void geraTarget() {
+		// Gera primeiro target.
+		target = robo.getCentroAtualRobo();
+		// Sorteia um angulo.
+		Vector2D v(distTarget, 0);
+		v = v.rotateLeft(float((double(rand()) / RAND_MAX) * 2 * M_PI));
+		target.x += v.x;
+		target.y += v.y;
 	}
 
 	/**
@@ -110,7 +137,7 @@ public:
 			onTarget = false;
 			rewards[0] = 1.0;
 		} else {
-			rewards[0] = 0.0;
+			rewards[0] = -1.0;
 		}
 	}
 
@@ -149,7 +176,7 @@ public:
 		myObs.clear();
 		myObs(0, 0) = 1;
 		myObs(1, 0) = angToTarget;
-		myObs(2, 0) = distToTaget;
+		myObs(2, 0) = distToTarget;
 		myObs(3, 0) = angSpeed;
 		myObs(4, 0) = spatialSpeed;
 
@@ -182,49 +209,77 @@ public:
 		int right = a % 3;
 
 		if (left == 1)
-			visao.ROBO_UM.diminuiVelocidadeMotorEsquerdo();
+			robo.diminuiVelocidadeMotorEsquerdo();
 		else if (left == 2)
-			visao.ROBO_UM.aumentaVelocidadeMotorEsquerdo();
+			robo.aumentaVelocidadeMotorEsquerdo();
 
 		if (right == 1)
-			visao.ROBO_UM.diminuiVelocidadeDireitoRobo();
+			robo.diminuiVelocidadeDireitoRobo();
 		else if (right == 2)
-			visao.ROBO_UM.aumentaVelocidadeDireitoRobo();
+			robo.aumentaVelocidadeDireitoRobo();
 
-		// Captura frame e o processa.
-		visao.captura();
+		robo.traduzirComandos();
+		com.enviaDadosRobo(estrategia.getteam());
 
-		// desenha figura.
-		// cvShowImage("Color", frame);
+		// Captura novo estado (visao) e atualiza estado interno do simulador.
+		atualizaEstado();
 
-		// CHEGOU NO TARGET
-		if (abs(target.x - visao.ROBO_UM.getCentroAtualRobo().x) < 10
-				&& abs(target.y == visao.ROBO_UM.getCentroAtualRobo().y) < 10) {
+		// Centro do robô sendo treinado.
+		const CvPoint& centroRobo = robo.getCentroAtualRobo();
+		const CvPoint& frenteRobo = robo.getFrenteRobo();
+
+		// Exibe target.
+		cvCircle(visao.frame, target, 0, cvScalar(255, 0, 0), 10, 1, 0);
+		cvCircle(visao.frame, centroRobo, 0, cvScalar(0, 255, 0), 10, 1, 0);
+
+		// Desenha figura.
+		cvShowImage("Color", visao.frame);
+
+		// Verifica se chegou no target.
+		if (abs(target.x - centroRobo.x) < MoveRLSimulator::TOL
+				&& abs(target.y == centroRobo.y) < MoveRLSimulator::TOL) {
+			// Sinaliza para getReward().
 			onTarget = true;
-			target.x == visao.ROBO_UM.getCentroAtualRobo().x + 10;
-			target.y == visao.ROBO_UM.getCentroAtualRobo().y - 10;
+			// Gera nova target.
+			geraTarget();
 		}
 
-		// Atualiza estado (observation).
-		// double angToTargetNew = ...
-		// double distToTartgetNew = ...
-		// angSpeed = angToTargetNew - angToTarget;
-		// spatialSpeed = spatialSpeed - distToTarget;
-		// angToTarget = angToTargetNew;
-		// distToTarget = distToTargetNew;
-
-		/* Limpa a imagem */
+		// Limpa a imagem.
 		visao.centroPontos.limpaTabelaCor();
+
+		/* Condicao de parada (tecla esc) */
+		if ((cvWaitKey(10) & 255) == 27) {
+			geraTarget();
+			return 1;
+		}
 
 		if (onTarget)
 			return 1;
-		else
-			return 0;
-
 		return 0; // This indicates goal state not encountered.
 		// Always return 0 for infinite horizon.
 		// This actually won't be checked by TemplateRLApp
 		// Unless you change which RLAlg is used.
+	}
+
+	void atualizaEstado() {
+		// Captura frame e o processa.
+		visao.captura();
+
+		// Centro do robô sendo treinado.
+		const CvPoint& centroRobo = robo.getCentroAtualRobo();
+		const CvPoint& frenteRobo = robo.getFrenteRobo();
+
+		// Atualiza estado (observation).
+		double angToTargetNew = produtoEscalar(frenteRobo, centroRobo,
+				target) - M_PI;
+		double distToTargetNew = sqrt(
+				(centroRobo.x - target.x) * (centroRobo.x - target.x)
+						+ (centroRobo.y - target.y)
+								* (centroRobo.y - target.y));
+		angSpeed = angToTargetNew - angToTarget;
+		spatialSpeed = distToTargetNew - distToTarget;
+		angToTarget = angToTargetNew;
+		distToTarget = distToTargetNew;
 	}
 
 	/**

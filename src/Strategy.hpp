@@ -14,10 +14,12 @@
 #ifndef __Strategy_hpp
 #define __Strategy_hpp
 
+#include "Robo.hpp"
+
 class Strategy {
 private:
 	int priority[10];
-	robo* team[3];
+	Robo* team[3];
 
 	//BOLA
 	CvPoint bolaAnterior, bolaAtual;
@@ -45,7 +47,7 @@ public:
 	Strategy() {
 	}
 
-	Strategy(robo* um, robo* dois, robo* tres) {
+	Strategy(Robo* um, Robo* dois, Robo* tres) {
 		/* coloca a configuração do robo 1 na posição 0 do vetor */
 		team[0] = um;
 		team[1] = dois;
@@ -55,11 +57,11 @@ public:
 	}
 
 	void setExtremidades() {
-		robo::xInferior = centroGol.x;
-		robo::yInferior = metadeCampoBaixo.y;
+		Robo::xInferior = centroGol.x;
+		Robo::yInferior = metadeCampoBaixo.y;
 
-		robo::xSuperior = centroGolAdversario.x;
-		robo::ySuperior = metadeCampoCima.y;
+		Robo::xSuperior = centroGolAdversario.x;
+		Robo::ySuperior = metadeCampoCima.y;
 	}
 
 	CvPoint getBolaAnterior() {
@@ -95,15 +97,15 @@ public:
 		return this->traveEsquerda;
 	}
 
-	robo* getRoboUm() {
+	Robo* getRoboUm() {
 		return this->team[0];
 	}
 
-	robo* getRoboDois() {
+	Robo* getRoboDois() {
 		return this->team[1];
 	}
 
-	robo* getRoboTres() {
+	Robo* getRoboTres() {
 		return this->team[2];
 	}
 
@@ -284,7 +286,7 @@ public:
 		return tamanhoVetor(auxDistancia);
 	}
 
-	robo** getteam() {
+	Robo** getteam() {
 		return team;
 	}
 
@@ -335,7 +337,7 @@ public:
 	}
 
 	/* retorna um ponto do lado da bola para o jogador ir para se preparar para o chute */
-	CvPoint ladoBola(int pts, robo* robo) {
+	CvPoint ladoBola(int pts, Robo* robo) {
 		cv::Point ponto;
 		CvPoint bola = bolaAtual;
 
@@ -358,7 +360,7 @@ public:
 	}
 
 	/* verifica se o robo está dentro do gol */
-	bool fundoDoGol(robo* goleiro, bool primeiroTempo) {
+	bool fundoDoGol(Robo* goleiro, bool primeiroTempo) {
 		if (primeiroTempo) {
 			if (goleiro->getFrenteRobo().x < atrasGol.x || goleiro->costas.x
 					< atrasGol.x)
@@ -371,7 +373,7 @@ public:
 	}
 
 	/* verifica se o robo está fora da linha do gol */
-	bool foraDoGol(robo* goleiro, bool primeiroTempo) {
+	bool foraDoGol(Robo* goleiro, bool primeiroTempo) {
 		if (primeiroTempo) {
 			if (goleiro->getCentroAtualRobo().y < traveEsquerda.y
 					|| goleiro->getCentroAtualRobo().y > traveDireita.y)
@@ -386,7 +388,7 @@ public:
 	}
 
 	/* calcula o angulo entre a trave e a frente ou costas do goleiro */
-	float getAnguloTrave(robo* goleiro, CvPoint alvo, CvPoint* trave,
+	float getAnguloTrave(Robo* goleiro, CvPoint alvo, CvPoint* trave,
 			bool primeiroTempo) {
 		float cosseno;
 
@@ -438,10 +440,10 @@ public:
 			}
 		}
 
-		return acos(cosseno) * (180 / PI);
+		return acos(cosseno) * (180 / M_PI);
 	}
 
-	void moveRoboGoleiro(robo* goleiro, CvPoint destino, bool primeiroTempo) {
+	void moveRoboGoleiro(Robo* goleiro, CvPoint destino, bool primeiroTempo) {
 		CvPoint trave;
 		float angulo = getAnguloTrave(goleiro, destino, &trave, primeiroTempo);
 		bool fora = foraDoGol(goleiro, primeiroTempo);
@@ -454,7 +456,7 @@ public:
 		}
 
 	}
-	void moveAtacante(robo* atacante, CvPoint pontoGoleiro, bool bolaNoAtaque,
+	void moveAtacante(Robo* atacante, CvPoint pontoGoleiro, bool bolaNoAtaque,
 			bool primeiroTempo, IplImage* frame) {
 
 		if (!bolaNoAtaque) {
@@ -474,7 +476,7 @@ public:
 		}
 	}
 
-	void moveZagueiro(robo* zagueiro, CvPoint destino, bool bolaNaDefesa,
+	void moveZagueiro(Robo* zagueiro, CvPoint destino, bool bolaNaDefesa,
 			bool primeiroTempo, IplImage* frame) {
 
 		if (!bolaNaDefesa) {
@@ -508,7 +510,7 @@ public:
 	}
 
 	/* pega um ponto de referência do lado da bola para fazer o alinhamento e chutar */
-	CvPoint calculaPontoRef(robo* robo, bool primeiroTempo) {
+	CvPoint calculaPontoRef(Robo* robo, bool primeiroTempo) {
 		CvPoint bola = bolaAtual;
 
 		if (!primeiroTempo) {
@@ -535,7 +537,7 @@ public:
 	}
 
 	/* calcula o Ponto na linha do gol que o goleiro deve ficar */
-	CvPoint calculaPontoGoleiro(robo* goleiro, bool primeiroTempo) {
+	CvPoint calculaPontoGoleiro(Robo* goleiro, bool primeiroTempo) {
 		CvPoint ponto;
 		CvPoint bola;
 		int m;
@@ -594,7 +596,7 @@ public:
 	}
 
 	/* verifica se o robo está atras da bola */
-	bool posicionadoAtrasDaBola(robo* robo) {
+	bool posicionadoAtrasDaBola(Robo* robo) {
 		CvPoint bola = bolaAtual;
 
 		/* if 1tempo else 2tempo */

@@ -14,6 +14,8 @@
 #ifndef __TabelaCor_cpp
 #define __TabelaCor_cpp
 
+#include "CentroCor.hpp"
+
 class TabelaCor {
 public:
 	CentroCor* tabelaCores[NUM_CORES];

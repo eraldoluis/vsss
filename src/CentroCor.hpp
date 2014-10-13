@@ -14,6 +14,8 @@
 #ifndef __CentroCor_cpp
 #define __CentroCor_cpp
 
+#include "Configuracoes.hpp"
+
 class CentroCor {
 public:
 	CentroCor* prox;

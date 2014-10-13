@@ -29,7 +29,7 @@
 #include "PontosCampo.hpp"
 #include "Funcoes.hpp"
 #include "Vector.hpp"
-#include "robo.hpp"
+#include "Robo.hpp"
 #include "Comunicacao.hpp"
 #include "Strategy.hpp"
 
@@ -45,9 +45,9 @@ IplImage* frame;
 PontosCampo* centroCampo = new PontosCampo();
 TabelaCor* centroPontos = new TabelaCor();
 
-robo* ROBO_UM = new robo(0, COR_TIME_UM, COR_ROBO_UM);
-robo* ROBO_DOIS = new robo(1, COR_TIME_UM, COR_ROBO_DOIS);
-robo* ROBO_TRES = new robo(2, COR_TIME_UM, COR_ROBO_TRES);
+Robo* ROBO_UM = new Robo(0, COR_TIME_UM, COR_ROBO_UM);
+Robo* ROBO_DOIS = new Robo(1, COR_TIME_UM, COR_ROBO_DOIS);
+Robo* ROBO_TRES = new Robo(2, COR_TIME_UM, COR_ROBO_TRES);
 
 Comunicacao* COMRobo = new Comunicacao();
 Strategy* TIME_UM = new Strategy(ROBO_UM, ROBO_DOIS, ROBO_TRES);

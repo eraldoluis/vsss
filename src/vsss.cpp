@@ -290,9 +290,12 @@ int main(int argc, char* argv[]) {
 			break;
 	}
 
-	/* Encerra a comunicacao e finaliza o software */
+	// Para todos os robôs.
 	TIME_UM->parar();
 	sleep(1);
+
+	// Finaliza thread de comunicação.
 	com.finaliza();
+
 	return 0;
 }

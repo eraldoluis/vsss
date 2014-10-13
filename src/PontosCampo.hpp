@@ -16,6 +16,13 @@
 
 #include <cstdio>
 
+/*
+ * Armazena pontos extremos do campo:
+ *   (i) os quatro cantos extremos; e
+ *   (ii) os cantos dos gols.
+ *
+ * TODO representar por um vetor de pontos ou então por atributos fixos.
+ */
 class PontosCampo {
 public:
 	PontosCampo* prox;
@@ -89,8 +96,7 @@ public:
 
 	/* Destrutor */
 	~PontosCampo() {
-		free(this->prox);
-		delete this;
+		delete prox;
 	}
 };
 

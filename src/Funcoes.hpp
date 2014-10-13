@@ -26,7 +26,10 @@ CvPoint gira(CvPoint entrada, CvPoint meio, double angulo);
 
 bool pixelReal(IplImage* color, int valueCor, int x, int y, Cor* cores);
 
-float tamanhoVetor(CvPoint2D32f vec);
+inline
+float tamanhoVetor(CvPoint2D32f vec) {
+	return sqrt(vec.x * vec.x + vec.y * vec.y);
+}
 
 float produtoEscalar(CvPoint direcao, CvPoint centro, CvPoint objetivo);
 

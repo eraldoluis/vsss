@@ -15,6 +15,8 @@
 #define __Strategy_hpp
 
 #include "Robo.hpp"
+#include "Funcoes.hpp"
+#include "Vector.hpp"
 
 class Strategy {
 private:
@@ -56,227 +58,66 @@ public:
 		flag = 0;
 	}
 
-	void setExtremidades() {
-		Robo::xInferior = centroGol.x;
-		Robo::yInferior = metadeCampoBaixo.y;
+	void setExtremidades();
 
-		Robo::xSuperior = centroGolAdversario.x;
-		Robo::ySuperior = metadeCampoCima.y;
-	}
+	CvPoint getBolaAnterior();
 
-	CvPoint getBolaAnterior() {
-		return this->bolaAnterior;
-	}
+	CvPoint getBolaAtual();
 
-	CvPoint getBolaAtual() {
-		return this->bolaAtual;
-	}
+	CvPoint getPrevisaoBola();
 
-	CvPoint getPrevisaoBola() {
-		return this->previsaoBola;
-	}
+	/*
+	 * Os centros dos gols são calculados pela média da distâncias do x e y das traves
+	 */
+	CvPoint getCentroGol();
 
-	/* Os centros dos gols são calculados pela média da distâncias do x e y das traves */
-	CvPoint getCentroGol() {
-		return this->centroGol;
-	}
+	CvPoint getCentroGolAdversario();
 
-	CvPoint getCentroGolAdversario() {
-		return this->centroGolAdversario;
-	}
+	CvPoint getAtrasGolAdversario();
 
-	CvPoint getAtrasGolAdversario() {
-		return this->atrasGolAdversario;
-	}
+	CvPoint getTraveDireita();
 
-	CvPoint getTraveDireita() {
-		return this->traveDireita;
-	}
+	CvPoint getTraveEsquerda();
 
-	CvPoint getTraveEsquerda() {
-		return this->traveEsquerda;
-	}
+	Robo* getRoboUm();
 
-	Robo* getRoboUm() {
-		return this->team[0];
-	}
+	Robo* getRoboDois();
 
-	Robo* getRoboDois() {
-		return this->team[1];
-	}
+	Robo* getRoboTres();
 
-	Robo* getRoboTres() {
-		return this->team[2];
-	}
+	void setCentroGolAdversario(CvPoint ponto);
 
-	void setCentroGolAdversario(CvPoint ponto) {
-		this->centroGolAdversario = ponto;
-	}
+	void setCentroGol(CvPoint ponto);
 
-	void setCentroGol(CvPoint ponto) {
-		this->centroGol = ponto;
-	}
+	void setAtrasGolAdversario(CvPoint ponto);
 
-	void setAtrasGolAdversario(CvPoint ponto) {
-		this->atrasGolAdversario = ponto;
-	}
+	void setBolaAnterior(CvPoint ponto);
 
-	void setBolaAnterior(CvPoint ponto) {
-		this->bolaAnterior = ponto;
-	}
+	void setBolaAtual(CvPoint ponto);
 
-	void setBolaAtual(CvPoint ponto) {
-		this->bolaAtual = ponto;
-	}
+	void setPrevisaoBola(CvPoint ponto);
 
-	void setPrevisaoBola(CvPoint ponto) {
-		this->previsaoBola = ponto;
-	}
+	void setTraveDireita(CvPoint ponto);
 
-	void setTraveDireita(CvPoint ponto) {
-		this->traveDireita = ponto;
-	}
+	void setTraveEsquerda(CvPoint ponto);
 
-	void setTraveEsquerda(CvPoint ponto) {
-		this->traveEsquerda = ponto;
-	}
+	/*
+	 * Calcula ponto atras do gol
+	 */
+	void calculaPontoAtrasGol();
 
-	/* Calcula ponto atras do gol */
-	void calculaPontoAtrasGol() {
-		/* if e else para parametrizar o fundo do gol para o primeiro e segundo tempo */
-		if (centroGolAdversario.x > metadeTudo.x) {
-			atrasGolAdversario.x = centroGolAdversario.x + 40;
-			atrasGol.x = centroGol.x - 40;
-		} else {
-			atrasGolAdversario.x = centroGolAdversario.x - 40;
-			atrasGol.x = centroGol.x + 40;
-		}
-		atrasGolAdversario.y = centroGolAdversario.y;
-		atrasGol.y = centroGol.y;
-	}
+	/*
+	 * Calcula o cosseno do angulo dos vetores direção e objetivo por meio do produto escalar
+	 */
+	float produtoEscalar2(CvPoint direcao, CvPoint centro, CvPoint objetivo);
 
-	/* Calcula o cosseno do angulo dos vetores direção e objetivo por meio do produto escalar */
-	float produtoEscalar2(CvPoint direcao, CvPoint centro, CvPoint objetivo) {
-		CvPoint2D32f vetordirecao;
-		CvPoint2D32f vetorobjetivo;
-		float tam;
+	/*
+	 * Transforma senos e cosenos em ângulos
+	 */
+	float senCosToAngle(float sen, float cos);
 
-		/* tamanho do vetor direção do robo na direção x e y */
-		vetordirecao.x = centro.x - direcao.x;
-		vetordirecao.y = centro.y - direcao.y;
-
-		/* módulo do vetor direção */
-		tam = tamanhoVetor(vetordirecao);
-
-		/* o vetor direção recebe seu vetor unitário */
-		vetordirecao.x = vetordirecao.x / tam;
-		vetordirecao.y = vetordirecao.y / tam;
-
-		/* o vetor objetivo recebe seu vetor unitário */
-		vetorobjetivo.x = centro.x - objetivo.x;
-		vetorobjetivo.y = centro.y - objetivo.y;
-
-		tam = tamanhoVetor(vetorobjetivo);
-
-		vetorobjetivo.x = vetorobjetivo.x / tam;
-		vetorobjetivo.y = vetorobjetivo.y / tam;
-
-		/* faz o produto escalar entre os dois vetores e obtém-se o coseno do angulo entre os vetores */
-		return vetordirecao.x * vetorobjetivo.x + vetordirecao.y
-				* vetorobjetivo.y;
-	}
-
-	/* transforma senos e cosenos em ângulos */
-	float senCosToAngle(float sen, float cos) {
-		if (sen >= 0 && sen <= 1 && cos >= 1 && cos >= 0)
-			return sen * 90;
-		else if (cos <= 0 && cos >= -1 && sen >= 0 && sen <= 1)
-			return (sen * 90) + 90;
-		else if (sen <= 0 && sen >= -1 && cos >= -1 && cos <= 0)
-			return (sen * 90) * (-1) + 180;
-		else // if (cos >= 0 and cos <= 1 && sen >= -1 && sen <= 0)
-			return (cos * 90) + 270;
-	}
-
-	/* this->getbolaAtual(),this->getbolaAnterior(), distancia */
 	CvPoint execPrevisaoBola(CvPoint objeto, CvPoint destino,
-			int distanciaPixel) {
-
-		float a, b;
-		/* bola anterior - bola atual no sentido x e y */
-		int deltay = destino.y - objeto.y;
-		int deltax = destino.x - objeto.x;
-		CvPoint ponto1, ponto2;
-
-		/* evita a divisão por zero */
-		if (deltax == 0)
-			deltax = 1;
-
-		/* calcula o coeficiente angular da reta */
-		if (deltax != 0 && deltay != 0)
-			a = (float) deltay / deltax;
-		else if (deltax != 0)
-			a = 1;
-
-		/* calcula o coeficiente linear */
-		b = (objeto.y - (a * (objeto.x)));
-
-		/* bola indo no sentido da esquerda para direita, cima ou baixo */
-		if ((deltax >= 0 && deltay > 0) || (deltax > 0 && deltay <= 0)) {
-			float distancia;
-			CvPoint2D32f auxDistancia;
-			int value = 0;
-			/* tenta prever a direção que a bola irá */
-			int recebey = a * (objeto.x - value) + b; //sinal -
-			int recebex = (recebey - b) / a;
-
-			/* ve a distancia entre o ponto futuro e o atual */
-			auxDistancia.x = recebex - objeto.x;
-			auxDistancia.y = recebey - objeto.y;
-			distancia = tamanhoVetor(auxDistancia);
-
-			/* Ajusta a distância da previsão para ficar igual ao que foi lido achando que a bola continuará no mesmo sentido e velocidade */
-			while (distancia < distanciaPixel) {
-				/* faz um recalculo da previsão */
-				value++;
-				recebey = a * (objeto.x - value) + b; //sinal -
-				recebex = (recebey - b) / a;
-
-				auxDistancia.x = recebex - objeto.x;
-				auxDistancia.y = recebey - objeto.y;
-				distancia = tamanhoVetor(auxDistancia);
-			}
-			/* gera o ponto futuro */
-			ponto1 = cvPoint(recebex, recebey);
-			return ponto1;
-
-			/* bola indo no sentido da esquerda para direita, cima ou baixo, idem anterior */
-		} else if ((deltax < 0 && deltay >= 0) || (deltax <= 0 && deltay < 0)) {
-			float distancia;
-			CvPoint2D32f auxDistancia;
-			int value = 0;
-			int recebey = a * (objeto.x + value) + b; //sinal +
-			int recebex = (recebey - b) / a;
-
-			auxDistancia.x = recebex - objeto.x;
-			auxDistancia.y = recebey - objeto.y;
-			distancia = tamanhoVetor(auxDistancia);
-
-			while (distancia < distanciaPixel) {
-				value++;
-				recebey = a * (objeto.x + value) + b; //sinal +
-				recebex = (recebey - b) / a;
-
-				auxDistancia.x = recebex - objeto.x;
-				auxDistancia.y = recebey - objeto.y;
-				distancia = tamanhoVetor(auxDistancia);
-			}
-
-			ponto1 = cvPoint(recebex, recebey);
-
-			return ponto1;
-		}
-	}
+			int distanciaPixel);
 
 	/* calcula a distância de dois pontos */
 	float distancia(CvPoint pontoUm, CvPoint pontoDois) {
@@ -296,15 +137,17 @@ public:
 	}
 
 	void setcentroGol(CvPoint dir, CvPoint esq) {
-		setCentroGol(cvPoint(esq.x + (dir.x - esq.x) / 2, esq.y + (dir.y
-				- esq.y) / 2));
+		setCentroGol(
+				cvPoint(esq.x + (dir.x - esq.x) / 2,
+						esq.y + (dir.y - esq.y) / 2));
 		setTraveDireita(dir);
 		setTraveEsquerda(esq);
 	}
 
 	void setcentroGolAdversario(CvPoint dir, CvPoint esq) {
-		setCentroGolAdversario(cvPoint(esq.x + (dir.x - esq.x) / 2, esq.y
-				+ (dir.y - esq.y) / 2));
+		setCentroGolAdversario(
+				cvPoint(esq.x + (dir.x - esq.x) / 2,
+						esq.y + (dir.y - esq.y) / 2));
 	}
 
 	bool pontoForaDoCampo(CvPoint ponto) {
@@ -362,8 +205,8 @@ public:
 	/* verifica se o robo está dentro do gol */
 	bool fundoDoGol(Robo* goleiro, bool primeiroTempo) {
 		if (primeiroTempo) {
-			if (goleiro->getFrenteRobo().x < atrasGol.x || goleiro->costas.x
-					< atrasGol.x)
+			if (goleiro->getFrenteRobo().x < atrasGol.x
+					|| goleiro->costas.x < atrasGol.x)
 				return true;
 			else if (goleiro->getFrenteRobo().x > atrasGol.x
 					|| goleiro->costas.x > atrasGol.x)
@@ -460,8 +303,9 @@ public:
 			bool primeiroTempo, IplImage* frame) {
 
 		if (!bolaNoAtaque) {
-			if (atacante->seguirPonto(metadeCampoCima, calculaPontoRef(atacante, primeiroTempo),
-					traveDireita, centroGolAdversario)) {
+			if (atacante->seguirPonto(metadeCampoCima,
+					calculaPontoRef(atacante, primeiroTempo), traveDireita,
+					centroGolAdversario)) {
 				if (posicionadoAtrasDaBola(atacante)) {
 					if (atacante->alinhar(bolaAtual, centroGolAdversario)) {
 						//printf("chute\n");
@@ -480,8 +324,9 @@ public:
 			bool primeiroTempo, IplImage* frame) {
 
 		if (!bolaNaDefesa) {
-			if (zagueiro->seguirPonto(metadeCampoCima, calculaPontoRef(zagueiro, primeiroTempo),
-					traveDireita, centroGolAdversario)) {
+			if (zagueiro->seguirPonto(metadeCampoCima,
+					calculaPontoRef(zagueiro, primeiroTempo), traveDireita,
+					centroGolAdversario)) {
 				if (posicionadoAtrasDaBola(zagueiro)) {
 					if (zagueiro->alinhar(bolaAtual, centroGolAdversario)) {
 						zagueiro->chutar();
@@ -491,8 +336,8 @@ public:
 		} else {
 			// acompanha a bola, faz um movimento parecido com o do goleiro
 			CvPoint pontoZagueiro = calculaPontoZagueiro(destino);
-			if (zagueiro->seguirPonto(metadeCampoCima, pontoZagueiro, traveDireita, metadeTudo,
-					false, true)) {
+			if (zagueiro->seguirPonto(metadeCampoCima, pontoZagueiro,
+					traveDireita, metadeTudo, false, true)) {
 				zagueiro->pararRobo();
 			}
 		}
@@ -551,20 +396,21 @@ public:
 			/* bola em direção do gol */
 			if (bola.y < traveEsquerda.y && bola.y > traveDireita.y) {
 				/* se as traves estão meio tortas faz a variação no eixo x caso contrário é 1 */
-				int div = abs(traveEsquerda.x - traveDireita.x) > 0 ? abs(
-						traveEsquerda.x - traveDireita.x) : 1;
+				int div =
+						abs(traveEsquerda.x - traveDireita.x) > 0 ?
+								abs(traveEsquerda.x - traveDireita.x) : 1;
 				/* calcula um coeficiente angular da reta que passa pelas traves */
 				m = (traveEsquerda.y - traveDireita.y) / div;
 				/* calcula o x e y do ponto que goleiro deve ficar nessa reta */
-				ponto.x
-						= ((bola.y - traveEsquerda.y + m * traveEsquerda.x) / m);
+				ponto.x =
+						((bola.y - traveEsquerda.y + m * traveEsquerda.x) / m);
 				ponto.y = bola.y;
 				return ponto;
 				/* bola esta depois da trave esquerda, entao o robo não passa desse ponto */
 			} else if (bola.y < traveEsquerda.y) {
 				ponto.x = traveDireita.x;
 				ponto.y = traveDireita.y;
-				return ponto;//traveDireita;
+				return ponto;		//traveDireita;
 				/* bola esta depois da trave direita, entao o robo não passa desse ponto */
 			} else {
 				ponto.x = traveEsquerda.x;
@@ -575,17 +421,18 @@ public:
 			/* mesma coisa só que para o segundo tempo */
 		} else {
 			if (bola.y > traveEsquerda.y && bola.y < traveDireita.y) {
-				int div = abs(traveEsquerda.x - traveDireita.x) > 0 ? abs(
-						traveEsquerda.x - traveDireita.x) : 1;
+				int div =
+						abs(traveEsquerda.x - traveDireita.x) > 0 ?
+								abs(traveEsquerda.x - traveDireita.x) : 1;
 				m = (traveEsquerda.y - traveDireita.y) / div;
-				ponto.x
-						= ((bola.y - traveEsquerda.y + m * traveEsquerda.x) / m);
+				ponto.x =
+						((bola.y - traveEsquerda.y + m * traveEsquerda.x) / m);
 				ponto.y = bola.y;
 				return ponto;
 			} else if (bola.y > traveEsquerda.y) {
 				ponto.x = traveDireita.x;
 				ponto.y = traveDireita.y;
-				return ponto;//traveDireita;
+				return ponto; //traveDireita;
 			} else {
 				ponto.x = traveEsquerda.x;
 				ponto.y = traveEsquerda.y;
@@ -639,16 +486,17 @@ public:
 			this->setPrevisaoBola(this->getBolaAtual());
 		else
 			//this->setprevisao_bola(this->getbolaatual());
-			this->setPrevisaoBola(this->execPrevisaoBola(this->getBolaAtual(),
-					this->getBolaAnterior(), distancia));
+			this->setPrevisaoBola(
+					this->execPrevisaoBola(this->getBolaAtual(),
+							this->getBolaAnterior(), distancia));
 
 		int goleiro = 2;
 		int atacante = 0;
 		int zagueiro = 1;
 
 		// Antes de tudo, calcular os pontos em que cada jogador ficará
-		CvPoint pontoGoleiro =
-				calculaPontoGoleiro(team[goleiro], primeiroTempo);
+		CvPoint pontoGoleiro = calculaPontoGoleiro(team[goleiro],
+				primeiroTempo);
 		CvPoint pz = calculaPontoZagueiro(pontoGoleiro);
 		cvCircle(frame, pz, 0, cvScalar(0, 255, 0), 10, 1, 0);
 		//printf("pontoGoleiro = %d %d\n", pontoGoleiro.x, pontoGoleiro.y);
@@ -662,7 +510,8 @@ public:
 		moveRoboGoleiro(team[goleiro], pontoGoleiro, primeiroTempo);
 
 		// Mover atacante
-		moveAtacante(team[atacante], pontoGoleiro, ataque, primeiroTempo, frame);
+		moveAtacante(team[atacante], pontoGoleiro, ataque, primeiroTempo,
+				frame);
 
 		//Mover o zagueiro
 		moveZagueiro(team[zagueiro], pontoGoleiro, !ataque, primeiroTempo,
@@ -676,9 +525,102 @@ public:
 		team[2]->pararRobo();
 	}
 
-/*	void bolaNaBorda(){
+	/*	void bolaNaBorda(){
 
-	}*/
+	 }*/
 };
+
+inline
+void Strategy::setExtremidades() {
+	Robo::xInferior = centroGol.x;
+	Robo::yInferior = metadeCampoBaixo.y;
+
+	Robo::xSuperior = centroGolAdversario.x;
+	Robo::ySuperior = metadeCampoCima.y;
+}
+
+inline CvPoint Strategy::getBolaAnterior() {
+	return this->bolaAnterior;
+}
+
+inline CvPoint Strategy::getBolaAtual() {
+	return this->bolaAtual;
+}
+
+inline CvPoint Strategy::getPrevisaoBola() {
+	return this->previsaoBola;
+}
+
+inline CvPoint Strategy::getCentroGol() {
+	return this->centroGol;
+}
+
+inline CvPoint Strategy::getCentroGolAdversario() {
+	return this->centroGolAdversario;
+}
+
+inline CvPoint Strategy::getAtrasGolAdversario() {
+	return this->atrasGolAdversario;
+}
+
+inline CvPoint Strategy::getTraveDireita() {
+	return this->traveDireita;
+}
+
+inline CvPoint Strategy::getTraveEsquerda() {
+	return this->traveEsquerda;
+}
+
+inline Robo* Strategy::getRoboUm() {
+	return this->team[0];
+}
+
+inline Robo* Strategy::getRoboDois() {
+	return this->team[1];
+}
+
+inline Robo* Strategy::getRoboTres() {
+	return this->team[2];
+}
+
+inline
+void Strategy::setCentroGolAdversario(CvPoint ponto) {
+	this->centroGolAdversario = ponto;
+}
+
+inline
+void Strategy::setCentroGol(CvPoint ponto) {
+	this->centroGol = ponto;
+}
+
+inline
+void Strategy::setAtrasGolAdversario(CvPoint ponto) {
+	this->atrasGolAdversario = ponto;
+}
+
+inline
+void Strategy::setBolaAnterior(CvPoint ponto) {
+	this->bolaAnterior = ponto;
+}
+
+inline
+void Strategy::setBolaAtual(CvPoint ponto) {
+	this->bolaAtual = ponto;
+}
+
+inline
+void Strategy::setPrevisaoBola(CvPoint ponto) {
+	this->previsaoBola = ponto;
+}
+
+inline
+void Strategy::setTraveDireita(CvPoint ponto) {
+	this->traveDireita = ponto;
+}
+
+inline
+void Strategy::setTraveEsquerda(CvPoint ponto) {
+	this->traveEsquerda = ponto;
+}
 
 #endif //Strategy_hpp

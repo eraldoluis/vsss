@@ -86,10 +86,6 @@ bool pixelReal(IplImage* color, int valueCor, int x, int y, Cor* cores) {
 		return false;
 }
 
-float tamanhoVetor(CvPoint2D32f vec) {
-	return sqrt(vec.x * vec.x + vec.y * vec.y);
-}
-
 float produtoEscalar(CvPoint direcao, CvPoint centro, CvPoint objetivo) {
 	CvPoint2D32f vetorDirecao;
 	CvPoint2D32f vetorObjetivo;

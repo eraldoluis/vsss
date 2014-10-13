@@ -41,10 +41,10 @@ Robo::Robo(int id, int time, int corRobo) {
 	setCorRobo(corRobo);
 }
 
-int Robo::procuraRobo(TabelaCor* centrosPontos, IplImage* frame) {
-	for (CentroCor* corAtual = centrosPontos->tabelaCores[this->getCorTime()];
+int Robo::procuraRobo(const TabelaCor& centrosPontos, IplImage* frame) {
+	for (CentroCor* corAtual = centrosPontos.tabelaCores[this->getCorTime()];
 			corAtual != NULL; corAtual = corAtual->prox) {
-		for (CentroCor* corPar = centrosPontos->tabelaCores[this->getCorRobo()];
+		for (CentroCor* corPar = centrosPontos.tabelaCores[this->getCorRobo()];
 				corPar != NULL; corPar = corPar->prox) {
 			CvPoint2D32f tamanhoVect;
 			tamanhoVect.x = corAtual->ponto.x - corPar->ponto.x;

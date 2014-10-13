@@ -17,6 +17,7 @@
 #include "Robo.hpp"
 #include "Funcoes.hpp"
 #include "Vector.hpp"
+#include "Visao.hpp"
 
 class Strategy {
 private:
@@ -49,11 +50,11 @@ public:
 	Strategy() {
 	}
 
-	Strategy(Robo* um, Robo* dois, Robo* tres) {
+	Strategy(Visao& visao) {
 		/* coloca a configuração do robo 1 na posição 0 do vetor */
-		team[0] = um;
-		team[1] = dois;
-		team[2] = tres;
+		team[0] = &visao.ROBO_UM;
+		team[1] = &visao.ROBO_DOIS;
+		team[2] = &visao.ROBO_TRES;
 		primeiroPonto = false;
 		flag = 0;
 	}

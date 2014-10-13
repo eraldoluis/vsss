@@ -116,7 +116,7 @@ public:
 
 	void setRoboPerdido(bool roboPerdido);
 
-	int procuraRobo(TabelaCor* centrosPontos, IplImage* frame);
+	int procuraRobo(const TabelaCor& centrosPontos, IplImage* frame);
 
 	float distancia(CvPoint pontoUm, CvPoint pontoDois);
 
@@ -167,6 +167,34 @@ public:
 
 	void traduzirComandos();
 
+	Motor getMotorDireitoRobo() {
+		return motorDireitoRobo;
+	}
+
+	Motor getMotorEsquerdoRobo() {
+		return motorEsquerdoRobo;
+	}
+
+	void aumentaVelocidadeDireitoRobo() {
+		if (motorDireitoRobo.velocidade < 5)
+			motorDireitoRobo.velocidade++;
+	}
+
+	void aumentaVelocidadeMotorEsquerdo() {
+		if (motorEsquerdoRobo.velocidade < 5)
+			motorEsquerdoRobo.velocidade++;
+	}
+
+	void diminuiVelocidadeDireitoRobo() {
+		if (motorDireitoRobo.velocidade > 0)
+			motorDireitoRobo.velocidade--;
+	}
+
+	void diminuiVelocidadeMotorEsquerdo() {
+		if (motorEsquerdoRobo.velocidade > 0)
+			motorEsquerdoRobo.velocidade--;
+	}
+
 };
 
 /*
@@ -177,18 +205,15 @@ unsigned char Robo::getMotorRobo() {
 	return motor;
 }
 
-inline
-CvPoint Robo::getFrenteRobo() {
+inline CvPoint Robo::getFrenteRobo() {
 	return frenteRobo;
 }
 
-inline
-CvPoint Robo::getCentroAtualRobo() {
+inline CvPoint Robo::getCentroAtualRobo() {
 	return this->centroAtualRobo;
 }
 
-inline
-CvPoint Robo::getLadoRobo() {
+inline CvPoint Robo::getLadoRobo() {
 	return this->ladoRobo;
 }
 
@@ -270,6 +295,5 @@ inline
 void Robo::setRoboPerdido(bool roboPerdido) {
 	this->roboPerdido = roboPerdido;
 }
-
 
 #endif //__robo_hpp

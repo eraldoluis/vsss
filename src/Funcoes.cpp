@@ -1,41 +1,5 @@
 #include "Funcoes.hpp"
 
-/* Le os valores do arquivo hsv.aff e cria um objeto para cada cor */
-Cor* guardaValoresHSV(FILE* arquivo, Cor* cores) {
-	int number[8] = { 0 };
-	int cont = 0;
-	int numero;
-	int HSVMin[3];
-	int HSVMax[3];
-	bool first = true;
-
-	while (!feof(arquivo)) {
-		fscanf(arquivo, "%d", &numero);
-
-		// Skip one character.
-		fgetc(arquivo);
-
-		if (cont == 3)
-			for (int i = 0; i < 3; i++)
-				HSVMin[i] = number[i];
-		else if (cont >= 7) {
-			for (int i = 0; i < 3; i++)
-				HSVMax[i] = number[i + 4];
-			if (first) {
-				cores = new Cor(HSVMin, HSVMax, numero);
-				first = false;
-			} else
-				cores->adicionaCor(HSVMin, HSVMax, numero);
-		} else
-			number[cont] = numero;
-		cont++;
-		if (cont == 8)
-			cont = 0;
-	}
-
-	return cores;
-}
-
 CvPoint gira(CvPoint entrada, CvPoint meio, double angulo) {
 	double seno, coseno;
 	CvPoint saida;

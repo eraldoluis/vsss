@@ -63,7 +63,10 @@ public:
 
 	}
 
-	void guardaPontosCampo(FILE* pontosCampo) {
+	/*
+	 * Lê pontos do arquivo dado.
+	 */
+	void lePontosCampo(FILE* pontosCampo) {
 		int cont = 0;
 		int pontoX, pontoY;
 

@@ -157,7 +157,7 @@ int main(int argc, char* argv[]) {
 	pthread_attr_init(&attr);
 
 	/* Valores do HSV */
-	arquivo = fopen("ARQUIVOSINFORMACAO/hsv.arff", "r");
+	arquivo = fopen("conf/hsv.arff", "r");
 	if (arquivo == NULL) {
 		printf("ERROR: FILE HSV NOT OPEN\n");
 		exit(1);
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
 	/* Verifica se conseguiu pegar o frame */
 	if (!frame) {
 		fprintf(stderr, "ERROR: frame is null...\n");
-		getchar();
+		// getchar();
 		exit(0);
 	}
 

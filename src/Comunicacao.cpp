@@ -16,11 +16,37 @@
 #include <fcntl.h>
 #include <termios.h>
 
-bool Comunicacao::enviarPacote = false;
+/*
+ * Função ponte que apenas chama o método loop do objeto de comunicação. No
+ * final, finaliza a thread.
+ */
+void* bridge(void* args) {
+	((Comunicacao*) args)->loop();
+	pthread_exit(0);
+}
 
-Comunicacao::Comunicacao() {
-	byte = new unsigned char[4];
-	copia = new unsigned char[4];
+Comunicacao::Comunicacao(const char* porta) :
+		porta(porta), fd(-1), finalizada(false) {
+}
+
+void Comunicacao::loop() {
+	// Envia dados enquanto o programa estiver rodando.
+	while (!finalizada) {
+		write(this->fd, byte, 4);
+		usleep(9000);
+	}
+}
+
+int Comunicacao::inicia() {
+	// Inicialização da comunicação via porta serial.
+	abrePortaSerialComunicacao();
+	configuraComunicacao();
+
+	// Configura thread.
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	finalizada = false;
+	return pthread_create(&tid, &attr, bridge, 0);
 }
 
 void Comunicacao::abrePortaSerialComunicacao() {
@@ -55,19 +81,14 @@ void Comunicacao::configuraComunicacao() {
 }
 
 void Comunicacao::enviaDadosRobo(Robo** time) {
-	if (enviarPacote) {
-		byte[0] = time[0]->getMotorRobo() & 0x7F;
-		byte[1] = time[1]->getMotorRobo() | 0x80;
-		byte[2] = time[2]->getMotorRobo() | 0x80;
-		byte[3] = (byte[0] ^ byte[1] ^ byte[2]) | 0x80;
-		write(this->fd, byte, 4);
-		enviarPacote = false;
-	} else {
-		/* envia sempre o ultimo pacote para não pegar nenhum ruido */
-		write(this->fd, byte, 4);
-	}
+	// Copia atributos dos robôs para o buffer de comunicação.
+	byte[0] = time[0]->getMotorRobo() & 0x7F;
+	byte[1] = time[1]->getMotorRobo() | 0x80;
+	byte[2] = time[2]->getMotorRobo() | 0x80;
+	byte[3] = (byte[0] ^ byte[1] ^ byte[2]) | 0x80;
 }
 
-int Comunicacao::getFileDescriptor() {
-	return this->fd;
+void Comunicacao::finaliza() {
+	finalizada = true;
+	pthread_join(tid, NULL);
 }

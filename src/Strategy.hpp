@@ -623,7 +623,7 @@ public:
 		return false;
 	}
 
-	void run(IplImage* frame, bool primeiroTempo, Comunicacao* com) {
+	void run(IplImage* frame, bool primeiroTempo) {
 		bool ataque;
 		float distancia;
 		CvPoint2D32f auxDistancia;

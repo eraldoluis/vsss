@@ -48,35 +48,17 @@ Robo* ROBO_UM = new Robo(0, COR_TIME_UM, COR_ROBO_UM);
 Robo* ROBO_DOIS = new Robo(1, COR_TIME_UM, COR_ROBO_DOIS);
 Robo* ROBO_TRES = new Robo(2, COR_TIME_UM, COR_ROBO_TRES);
 
-Comunicacao* COMRobo = new Comunicacao();
 Strategy* TIME_UM = new Strategy(ROBO_UM, ROBO_DOIS, ROBO_TRES);
-
-bool rodando;
-
-/* Envia os dados para os robos */
-void* enviarDados(void* args) {
-	/*Inicialização da comunicação via porta serial */
-	COMRobo->abrePortaSerialComunicacao();
-	COMRobo->configuraComunicacao();
-
-	/* Envia dados enquanto o programa estiver rodando */
-	while (rodando) {
-		COMRobo->enviaDadosRobo(TIME_UM->getteam());
-		usleep(9000);
-	}
-
-	pthread_exit(0);
-}
 
 /* Função responsável por encontrar os robôs na imagem */
 void color(IplImage* color) {
 	uchar* ptr;
 	int a, b, a_max, b_max;
 
-	/*Percorre a imagem toda */
-	for (int y = 0; y < color->height; y++)
+	// Percorre toda a imagem.
+	for (int y = 0; y < color->height; y++) {
 		for (int x = 0; x < color->width; x++) {
-			/* Retorna as cores de um determinado pixel (x, y) da imagem */
+			// Cor do pixel (x, y).
 			ptr = cvPtr2D(color, y, x, NULL);
 
 			int i = cores->verificaHSVCor(ptr[0], ptr[1], ptr[2]);
@@ -124,6 +106,7 @@ void color(IplImage* color) {
 				}
 			}
 		}
+	}
 
 	/* Verifica se os robos estao perdidos */
 	if (ROBO_UM->procuraRobo(centroPontos, frame) == 0) {
@@ -148,12 +131,7 @@ void color(IplImage* color) {
 /* Main do software */
 int main(int argc, char* argv[]) {
 
-	rodando = true;
 	bool primeiroTempo;
-	sched_param param;
-	pthread_t tid;
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
 
 	/* Valores do HSV */
 	arquivo = fopen("conf/hsv.arff", "r");
@@ -190,8 +168,8 @@ int main(int argc, char* argv[]) {
 	cvNamedWindow("Color", CV_WINDOW_AUTOSIZE);
 
 	/* Thread de comunicacao */
-	int ret = pthread_create(&tid, &attr, enviarDados, 0);
-	if (ret != 0) {
+	Comunicacao com(PORTA_SERIAL);
+	if (com.inicia() != 0) {
 		printf("erro ao criar thread de enviar dados\n");
 		return 1;
 	} else
@@ -241,6 +219,7 @@ int main(int argc, char* argv[]) {
 
 		/* Captura frame atual em RGB */
 		frame = cvQueryFrame(capture);
+
 		/* Verifica se conseguiu pegar o frame */
 		if (!frame) {
 			fprintf(stderr, "ERROR: frame is null...\n");
@@ -260,18 +239,19 @@ int main(int argc, char* argv[]) {
 			/* Seta os pontos da bola */
 			TIME_UM->setBola(centroPontos->tabelaCores[4]->ponto);
 
-			TIME_UM->run(frame, primeiroTempo, COMRobo);
+			TIME_UM->run(frame, primeiroTempo);
 
-			/* Autoriza enviar os comandos */
-			Comunicacao::enviarPacote = true;
+			// Envia novos comandos para os robôs.
+			com.enviaDadosRobo(TIME_UM->getteam());
 
 			/* Exibe o ponto da bola */
 			cvCircle(frame, centroPontos->tabelaCores[4]->ponto, 0,
 					cvScalar(255, 255, 0), 10, 1, 0);
 
 		} else {
-			/* Autoriza enviar os comandos */
-			Comunicacao::enviarPacote = true;
+			// Envia novos comandos para os robôs.
+			com.enviaDadosRobo(TIME_UM->getteam());
+			// Para todos os robôs (100 vezes!?).
 			for (int i = 0; i < 100; i++)
 				TIME_UM->parar();
 		}
@@ -313,7 +293,6 @@ int main(int argc, char* argv[]) {
 	/* Encerra a comunicacao e finaliza o software */
 	TIME_UM->parar();
 	sleep(1);
-	rodando = false;
-	pthread_join(tid, 0);
+	com.finaliza();
 	return 0;
 }

@@ -14,6 +14,8 @@
 #ifndef __CentroCor_cpp
 #define __CentroCor_cpp
 
+#include <opencv2/opencv.hpp>
+
 #include "Configuracoes.hpp"
 
 class CentroCor {
@@ -24,57 +26,18 @@ public:
 	int idCor;
 
 	/* Construtor */
-	CentroCor() {
-	}
+	CentroCor();
 
-	CentroCor(CvPoint novo, int idCor) {
-		this->ponto.x = novo.x;
-		this->ponto.y = novo.y;
-		this->quantidade = 1;
-		this->prox = NULL;
-		this->idCor = idCor;
-	}
+	CentroCor(CvPoint novo, int idCor);
 
-	CentroCor(int x, int y, int idCor) {
-		this->ponto.x = x;
-		this->ponto.y = y;
-		this->quantidade = 1;
-		this->prox = NULL;
-		this->idCor = idCor;
-	}
+	CentroCor(int x, int y, int idCor);
 
-	void adicionaNovoCentroCor(int x, int y, int idCor) {
-		CentroCor* novoPonto = new CentroCor(x, y, idCor);
-		CentroCor* aux;
-		aux = this;
+	void adicionaNovoCentroCor(int x, int y, int idCor);
 
-		while (aux->prox != NULL)
-			aux = aux->prox;
-
-		aux->prox = novoPonto;
-		novoPonto->prox = NULL;
-
-		this->quantidade++;
-	}
-
-	bool verificaCentroCor(int x, int y) {
-		CentroCor* aux;
-		aux = this;
-
-		while (aux != NULL) {
-			if (((x - aux->ponto.x) * (x - aux->ponto.x) + (y - aux->ponto.y)
-					* (y - aux->ponto.y) <= RAIO_DISTANCIA))
-				return false;
-			aux = aux->prox;
-		}
-		return true;
-	}
+	bool verificaCentroCor(int x, int y);
 
 	/* Destrutor */
-	~CentroCor() {
-		free(this->prox);
-		delete this;
-	}
+	~CentroCor();
 };
 
 #endif //__CentroCor_cpp

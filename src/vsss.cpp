@@ -14,7 +14,6 @@
 /* Libs */
 //#include <opencv/cv.h>
 //#include <opencv/highgui.h>
-
 #include <opencv2/opencv.hpp>
 
 #include <unistd.h>
@@ -199,7 +198,9 @@ int main(int argc, char* argv[]) {
 		printf("Thread de comunicação criada\n");
 
 	/* Define o lado que sera defesa e ataque definido pelo argumento [1] */
-	primeiroTempo = atoi(argv[1]) == 1 ? 1 : 0;
+	primeiroTempo = true;
+	if (argc > 1)
+		primeiroTempo = (atoi(argv[1]) == 1);
 	if (primeiroTempo) {
 		TIME_UM->setcentroGol(centroCampo->devolvePontoPontosCampo(8),
 				centroCampo->devolvePontoPontosCampo(11)); //VERMELHO

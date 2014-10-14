@@ -15,6 +15,7 @@
 
 #include <fcntl.h>
 #include <termios.h>
+#include <unistd.h>
 
 /*
  * Função ponte que apenas chama o método loop do objeto de comunicação. No

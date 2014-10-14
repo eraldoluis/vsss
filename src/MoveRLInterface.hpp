@@ -1,14 +1,14 @@
 /*
- * MoveRLInterface.hpp
+ * MoveRLSimulator.hpp
  *
  *  Created on: Oct 13, 2014
  *      Author: eraldo
  */
 
-#ifndef MOVERLINTERFACE_HPP_
-#define MOVERLINTERFACE_HPP_
+#ifndef MOVERLSIMULATOR_HPP_
+#define MOVERLSIMULATOR_HPP_
 
-#include <opencv2/core/core_c.h>
+#include <opencv2/opencv.hpp>
 
 #include <PGBasics.hh>
 #include <Simulator.hh>
@@ -53,7 +53,7 @@ using namespace libpg;
  * the reward suddenly gets much worse, make
  * this smaller.
  */
-#define STEP_SIZE 0.00001
+#define STEP_SIZE 0.01
 
 // Total max optimisation steps, 0=unbounded
 #define MAX_STEPS 0
@@ -66,19 +66,19 @@ using namespace libpg;
  * too small for LSPI otherwise it will
  * increase variance.
  */
-#define EPOCH_STEPS 1000
+#define EPOCH_STEPS 100
 
 /*
  * Simulador de Reinforcemente Learning que gera pontos para o robô perseguir.
  */
-class MoveRLInterface: public libpg::Simulator {
+class MoveRLSimulator: public libpg::Simulator {
 
 private:
 
 	/*
 	 * Tolerância para considerar que o robô chegou no target.
 	 */
-	static const int TOL = 10;
+	static const int TOL = 20;
 
 public:
 
@@ -93,37 +93,24 @@ public:
 	double distToTarget;
 	double angSpeed;
 	double spatialSpeed;
-	bool onTarget;
 
 	CvPoint target;
 
 	Robo& robo;
+
+	double reward;
 
 	/**
 	 * Constructor for your simulator. Do any once off
 	 * initialisation. Read data files, allocate memory, stuff like that.
 	 * Can be left empty if need be.
 	 */
-	MoveRLSimulator(Visao& visao, Comunicacao& com, Strategy& estrategia, Robo& robo) :
-			visao(visao), com(com), estrategia(estrategia), distTarget(50), angToTarget(
-					0), distToTarget(0), angSpeed(0), spatialSpeed(0), onTarget(
-					false), robo(robo) {
-		srand(time(NULL));
-	}
+	MoveRLSimulator(Visao& visao, Comunicacao& com, Strategy& estrategia, Robo& robo);
 
 	// Empty desctructor. Fill in if you need to deallocate stuff.
-	virtual ~MoveRLSimulator() {
-	}
+	virtual ~MoveRLSimulator();
 
-	void geraTarget() {
-		// Gera primeiro target.
-		target = robo.getCentroAtualRobo();
-		// Sorteia um angulo.
-		Vector2D v(distTarget, 0);
-		v = v.rotateLeft(float((double(rand()) / RAND_MAX) * 2 * M_PI));
-		target.x += v.x;
-		target.y += v.y;
-	}
+	void geraTarget();
 
 	/**
 	 * Return the reward for the current state, or previous-state and action combination.
@@ -132,14 +119,7 @@ public:
 	 * it a class variable to return here.
 	 * @param rewards vector to put the rewards in.
 	 */
-	void getReward(Vector& rewards) {
-		if (onTarget) {
-			onTarget = false;
-			rewards[0] = 1.0;
-		} else {
-			rewards[0] = -1.0;
-		}
-	}
+	void getReward(Vector& rewards);
 
 	/**
 	 * Fill in a description of the current state. Think of the
@@ -168,23 +148,7 @@ public:
 	 *
 	 * @param obs The observation class to fill in and return
 	 */
-	void getObservation(Observation& obs) {
-
-		// Retrieve the feature matrix from the observation.
-		Matrix myObs = obs.getFeatures();
-
-		myObs.clear();
-		myObs(0, 0) = 1;
-		myObs(1, 0) = angToTarget;
-		myObs(2, 0) = distToTarget;
-		myObs(3, 0) = angSpeed;
-		myObs(4, 0) = spatialSpeed;
-
-		// Note, don't do anything that affects the state of the
-		// simulator. You never know if getObservation() will
-		// be called more than once between doAction()
-
-	}
+	void getObservation(Observation& obs);
 
 	/**
 	 * Do the action passed in. Again, in the single agent case the action vector
@@ -200,87 +164,9 @@ public:
 	 * @param action The 1x1 vector containing the action to do.
 	 * @return 1 for goal state (ignored in TemplateRLApp).
 	 */
-	int doAction(Vector& action) {
+	int doAction(Vector& action);
 
-		int a = (int) action[0];
-
-		/* Altera estado do robo de acordo com a action. */
-		int left = a / 3;
-		int right = a % 3;
-
-		if (left == 1)
-			robo.diminuiVelocidadeMotorEsquerdo();
-		else if (left == 2)
-			robo.aumentaVelocidadeMotorEsquerdo();
-
-		if (right == 1)
-			robo.diminuiVelocidadeDireitoRobo();
-		else if (right == 2)
-			robo.aumentaVelocidadeDireitoRobo();
-
-		robo.traduzirComandos();
-		com.enviaDadosRobo(estrategia.getteam());
-
-		// Captura novo estado (visao) e atualiza estado interno do simulador.
-		atualizaEstado();
-
-		// Centro do robô sendo treinado.
-		const CvPoint& centroRobo = robo.getCentroAtualRobo();
-		const CvPoint& frenteRobo = robo.getFrenteRobo();
-
-		// Exibe target.
-		cvCircle(visao.frame, target, 0, cvScalar(255, 0, 0), 10, 1, 0);
-		cvCircle(visao.frame, centroRobo, 0, cvScalar(0, 255, 0), 10, 1, 0);
-
-		// Desenha figura.
-		cvShowImage("Color", visao.frame);
-
-		// Verifica se chegou no target.
-		if (abs(target.x - centroRobo.x) < MoveRLSimulator::TOL
-				&& abs(target.y == centroRobo.y) < MoveRLSimulator::TOL) {
-			// Sinaliza para getReward().
-			onTarget = true;
-			// Gera nova target.
-			geraTarget();
-		}
-
-		// Limpa a imagem.
-		visao.centroPontos.limpaTabelaCor();
-
-		/* Condicao de parada (tecla esc) */
-		if ((cvWaitKey(10) & 255) == 27) {
-			geraTarget();
-			return 1;
-		}
-
-		if (onTarget)
-			return 1;
-		return 0; // This indicates goal state not encountered.
-		// Always return 0 for infinite horizon.
-		// This actually won't be checked by TemplateRLApp
-		// Unless you change which RLAlg is used.
-	}
-
-	void atualizaEstado() {
-		// Captura frame e o processa.
-		visao.captura();
-
-		// Centro do robô sendo treinado.
-		const CvPoint& centroRobo = robo.getCentroAtualRobo();
-		const CvPoint& frenteRobo = robo.getFrenteRobo();
-
-		// Atualiza estado (observation).
-		double angToTargetNew = produtoEscalar(frenteRobo, centroRobo,
-				target) - M_PI;
-		double distToTargetNew = sqrt(
-				(centroRobo.x - target.x) * (centroRobo.x - target.x)
-						+ (centroRobo.y - target.y)
-								* (centroRobo.y - target.y));
-		angSpeed = angToTargetNew - angToTarget;
-		spatialSpeed = distToTargetNew - distToTarget;
-		angToTarget = angToTargetNew;
-		distToTarget = distToTargetNew;
-	}
+	void atualizaEstado();
 
 	/**
 	 * This defines how many elements there are in your observation vector.
@@ -366,4 +252,4 @@ public:
 
 };
 
-#endif /* MOVERLINTERFACE_HPP_ */
+#endif /* MOVERLSIMULATOR_HPP_ */

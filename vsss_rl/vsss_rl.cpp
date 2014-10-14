@@ -38,7 +38,7 @@
 #include "Robo.hpp"
 #include "Comunicacao.hpp"
 #include "Strategy.hpp"
-#include "MoveRLSimulator.hpp"
+#include "MoveRLInterface.hpp"
 #include "Visao.hpp"
 
 using namespace std;
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 	Robo& robo = visao.ROBO_TRES;
 
 	// STEP 1. Create simulator
-	MoveRLSimulator* moveSimulator = new MoveRLSimulator(visao, com, estrategia, robo);
+	MoveRLInterface* moveSimulator = new MoveRLInterface(visao, com, estrategia, robo);
 
 	// Gera estado inicial e primeiro target.
 	printf("Esperando qualquer tecla continuar.");

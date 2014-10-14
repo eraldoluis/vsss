@@ -1,5 +1,5 @@
 /*
- * MoveRLSimulator.hpp
+ * MoveRLInterface.hpp
  *
  *  Created on: Oct 13, 2014
  *      Author: eraldo
@@ -71,7 +71,7 @@ using namespace libpg;
 /*
  * Simulador de Reinforcemente Learning que gera pontos para o robô perseguir.
  */
-class MoveRLSimulator: public libpg::Simulator {
+class MoveRLInterface: public libpg::Simulator {
 
 private:
 
@@ -105,10 +105,10 @@ public:
 	 * initialisation. Read data files, allocate memory, stuff like that.
 	 * Can be left empty if need be.
 	 */
-	MoveRLSimulator(Visao& visao, Comunicacao& com, Strategy& estrategia, Robo& robo);
+	MoveRLInterface(Visao& visao, Comunicacao& com, Strategy& estrategia, Robo& robo);
 
 	// Empty desctructor. Fill in if you need to deallocate stuff.
-	virtual ~MoveRLSimulator();
+	virtual ~MoveRLInterface();
 
 	void geraTarget();
 

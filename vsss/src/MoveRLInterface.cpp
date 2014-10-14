@@ -1,18 +1,18 @@
 /*
- * MoveRLSimulator.cpp
+ * MoveRLInterface.cpp
  *
  *  Created on: 13/10/2014
  *      Author: paulo
  */
 
-#include "MoveRLSimulator.hpp"
+#include "MoveRLInterface.hpp"
 
 /**
  * Constructor for your simulator. Do any once off
  * initialisation. Read data files, allocate memory, stuff like that.
  * Can be left empty if need be.
  */
-MoveRLSimulator::MoveRLSimulator(Visao& visao, Comunicacao& com,
+MoveRLInterface::MoveRLInterface(Visao& visao, Comunicacao& com,
 		Strategy& estrategia, Robo& robo) :
 	visao(visao), com(com), estrategia(estrategia), distTarget(50),
 			angToTarget(0), distToTarget(0), angSpeed(0), spatialSpeed(0),
@@ -21,10 +21,10 @@ MoveRLSimulator::MoveRLSimulator(Visao& visao, Comunicacao& com,
 }
 
 // Empty desctructor. Fill in if you need to deallocate stuff.
-MoveRLSimulator::~MoveRLSimulator() {
+MoveRLInterface::~MoveRLInterface() {
 }
 
-void MoveRLSimulator::geraTarget() {
+void MoveRLInterface::geraTarget() {
 	// Gera primeiro target.
 	target = robo.getCentroAtualRobo();
 	// Sorteia um angulo.
@@ -41,7 +41,7 @@ void MoveRLSimulator::geraTarget() {
  * it a class variable to return here.
  * @param rewards vector to put the rewards in.
  */
-void MoveRLSimulator::getReward(Vector& rewards) {
+void MoveRLInterface::getReward(Vector& rewards) {
 	rewards[0] = reward;
 }
 
@@ -72,7 +72,7 @@ void MoveRLSimulator::getReward(Vector& rewards) {
  *
  * @param obs The observation class to fill in and return
  */
-void MoveRLSimulator::getObservation(Observation& obs) {
+void MoveRLInterface::getObservation(Observation& obs) {
 
 	// Retrieve the feature matrix from the observation.
 	Matrix myObs = obs.getFeatures();
@@ -104,7 +104,7 @@ void MoveRLSimulator::getObservation(Observation& obs) {
  * @param action The 1x1 vector containing the action to do.
  * @return 1 for goal state (ignored in TemplateRLApp).
  */
-int MoveRLSimulator::doAction(Vector& action) {
+int MoveRLInterface::doAction(Vector& action) {
 
 	int a = (int) action[0];
 
@@ -144,8 +144,8 @@ int MoveRLSimulator::doAction(Vector& action) {
 	bool onTarget = false;
 
 	// Verifica se chegou no target.
-	if (abs(target.x - centroRobo.x) < MoveRLSimulator::TOL && abs(target.y
-			- centroRobo.y) < MoveRLSimulator::TOL) {
+	if (abs(target.x - centroRobo.x) < MoveRLInterface::TOL && abs(target.y
+			- centroRobo.y) < MoveRLInterface::TOL) {
 		// Sinaliza para getReward().
 		onTarget = true;
 		reward = 1;
@@ -177,7 +177,7 @@ int MoveRLSimulator::doAction(Vector& action) {
 	// Unless you change which RLAlg is used.
 }
 
-void MoveRLSimulator::atualizaEstado() {
+void MoveRLInterface::atualizaEstado() {
 	// Captura frame e o processa.
 	visao.captura();
 

@@ -1,7 +1,12 @@
-vsss
 Debug/
 Release/
 .project
 .cproject
-/Debug
-.settings/
+.settings
+.metadata
+/*.zip
+/*.tar.gz
+/old
+*.o
+*.d
+*~

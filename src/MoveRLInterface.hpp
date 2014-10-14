@@ -1,14 +1,14 @@
 /*
- * MoveRLSimulator.hpp
+ * MoveRLInterface.hpp
  *
  *  Created on: Oct 13, 2014
  *      Author: eraldo
  */
 
-#ifndef MOVERLSIMULATOR_HPP_
-#define MOVERLSIMULATOR_HPP_
+#ifndef MOVERLINTERFACE_HPP_
+#define MOVERLINTERFACE_HPP_
 
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core_c.h>
 
 #include <PGBasics.hh>
 #include <Simulator.hh>
@@ -18,8 +18,9 @@
 #include <time.h>
 
 #include "Vector.hpp"
-#include "Funcoes.hpp"
-#include "Configuracoes.hpp"
+#include "Visao.hpp"
+#include "Comunicacao.hpp"
+#include "Strategy.hpp"
 
 using namespace libpg;
 
@@ -52,18 +53,12 @@ using namespace libpg;
  * the reward suddenly gets much worse, make
  * this smaller.
  */
-#define STEP_SIZE 0.01
+#define STEP_SIZE 0.00001
 
 // Total max optimisation steps, 0=unbounded
 #define MAX_STEPS 0
 // Total max wall clock time, 0=unbounded
 #define MAX_TIME 0
-
-#define MIN_X 0
-#define MAX_X 640
-#define MIN_Y 0
-#define MAX_Y 480
-
 /*
  * Steps per epoch (progress print outs/LSTDQ steps)
  * Increase this if youre getting too much information.
@@ -73,156 +68,10 @@ using namespace libpg;
  */
 #define EPOCH_STEPS 1000
 
-// Tamanho do passo da velocidade angular.
-#define VEL_ANG_PASSO (M_PI/8)
-
-// Número de velocidades angulares positivas (e negativas).
-#define MAX_VEL_ANG 5
-
-/**
- * Rotaciona ponto dado ao redor da origem (0,0).
- */
-CvPoint2D32f& rot(CvPoint2D32f& ponto, float ang) {
-	float c = cosf(ang);
-	float s = sinf(ang);
-	ponto.x = ponto.x * c - ponto.y * s;
-	ponto.y = ponto.y * c + ponto.x * s;
-	return ponto;
-}
-
-/**
- * Rotaciona ponto dado ao redor do centro dado.
- */
-CvPoint2D32f& rot(CvPoint2D32f& ponto, const CvPoint2D32f& centro, float ang) {
-	float c = cosf(ang);
-	float s = sinf(ang);
-	ponto.x = (ponto.x - centro.x) * c - (ponto.y - centro.y) * s + centro.x;
-	ponto.y = (ponto.y - centro.y) * c + (ponto.x - centro.x) * s + centro.y;
-	return ponto;
-}
-
-/**
- * Simula um robô.
- */
-class RoboSim {
-private:
-	// Ponto central do robô.
-	CvPoint2D32f centro;
-
-	// Ponto à frente do robô.
-	CvPoint2D32f frente;
-
-	// Raio do robô.
-	int raio;
-
-	// Multiplicador da velocidade angular do motor esquerdo.
-	int velAngL;
-
-	// Multiplicador da velocidade angular do motor direito.
-	int velAngR;
-
-public:
-	/**
-	 * Construtor padrão.
-	 */
-	RoboSim(int raio) :
-			raio(raio), velAngL(0), velAngR(0) {
-		centro.x = centro.y = 100;
-		frente.x = 100;
-		frente.y = 100 + raio;
-	}
-
-	/**
-	 * Atualiza posição do robô de acordo com as velocidades de seus motores e
-	 * o passo dado.
-	 */
-	void move(float passo = 1.0) {
-		CvPoint2D32f frente = this->frente;
-		CvPoint2D32f centro = this->centro;
-
-		// Ponto de tração do motor esquerdo.
-		CvPoint2D32f pontoLeft;
-		pontoLeft.x = -(frente.y - centro.y) + centro.x;
-		pontoLeft.y = frente.x - centro.x + centro.y;
-		// Ponto de tração do motor direito.
-		CvPoint2D32f pontoRight;
-		pontoRight.x = frente.y - centro.y + centro.x;
-		pontoRight.y = -(frente.x - centro.x) + centro.y;
-		// Move frente e centro de acordo com motor esquerdo.
-		rot(frente, pontoRight, (-1) * VEL_ANG_PASSO * velAngL * passo);
-		rot(centro, pontoRight, (-1) * VEL_ANG_PASSO * velAngL * passo);
-		// Move frente e centro de acordo com motor direito.
-		rot(frente, pontoLeft, VEL_ANG_PASSO * velAngR * passo);
-		rot(centro, pontoLeft, VEL_ANG_PASSO * velAngR * passo);
-
-		// Verifica limites.
-		if (frente.x >= MIN_X + raio && frente.x <= MAX_X - raio
-				&& frente.y >= MIN_Y + raio && frente.y <= MAX_Y - raio
-				&& centro.x >= MIN_X + raio && centro.x <= MAX_X - raio
-				&& centro.y >= MIN_Y + raio && centro.y <= MAX_Y - raio) {
-			frente.x -= centro.x;
-			frente.y -= centro.y;
-			float l = sqrt(frente.x * frente.x + frente.y * frente.y);
-			frente.x *= (raio / l);
-			frente.y *= (raio / l);
-			frente.x += centro.x;
-			frente.y += centro.y;
-			this->frente = frente;
-			this->centro = centro;
-
-		}
-	}
-
-	bool incVelRight() {
-		if (velAngR < MAX_VEL_ANG) {
-			++velAngR;
-			return true;
-		}
-
-		return false;
-	}
-
-	bool decVelRight() {
-		if (velAngR > -MAX_VEL_ANG) {
-			--velAngR;
-			return true;
-		}
-
-		return false;
-	}
-
-	bool incVelLeft() {
-		if (velAngL < MAX_VEL_ANG) {
-			++velAngL;
-			return true;
-		}
-
-		return false;
-	}
-
-	bool decVelLeft() {
-		if (velAngL > -MAX_VEL_ANG) {
-			--velAngL;
-			return true;
-		}
-
-		return false;
-	}
-
-	const CvPoint2D32f& getCentro() {
-		return centro;
-	}
-
-	const CvPoint2D32f& getFrente() {
-		return frente;
-	}
-
-};
-
 /*
  * Simulador de Reinforcemente Learning que gera pontos para o robô perseguir.
  */
-class MoveRLSimulator: public libpg::Simulator {
+class MoveRLInterface: public libpg::Simulator {
 
 private:
 
@@ -233,46 +82,42 @@ private:
 
 public:
 
+	Visao& visao;
+	Comunicacao& com;
+	Strategy& estrategia;
+
 	int distTarget;
 
-// Estado anterior.
+	// Estado anterior.
 	double angToTarget;
 	double distToTarget;
 	double angSpeed;
 	double spatialSpeed;
+	bool onTarget;
 
 	CvPoint target;
 
-	RoboSim robo;
-
-	double reward;
-
-	CvMat* frame;
+	Robo& robo;
 
 	/**
 	 * Constructor for your simulator. Do any once off
 	 * initialisation. Read data files, allocate memory, stuff like that.
 	 * Can be left empty if need be.
 	 */
-	MoveRLSimulator() :
-			distTarget(50), angToTarget(0), distToTarget(0), angSpeed(0), spatialSpeed(
-					0), robo(30), reward(0) {
+	MoveRLSimulator(Visao& visao, Comunicacao& com, Strategy& estrategia, Robo& robo) :
+			visao(visao), com(com), estrategia(estrategia), distTarget(50), angToTarget(
+					0), distToTarget(0), angSpeed(0), spatialSpeed(0), onTarget(
+					false), robo(robo) {
 		srand(time(NULL));
-		// Cria uma janela para exibir o frame.
-		cvNamedWindow("Color", CV_WINDOW_AUTOSIZE);
-		// Captura frame atual em RGB.
-		frame = cvCreateMat(480, 640, CV_8UC3);
 	}
 
 	// Empty desctructor. Fill in if you need to deallocate stuff.
 	virtual ~MoveRLSimulator() {
-		free(frame);
 	}
 
 	void geraTarget() {
 		// Gera primeiro target.
-		target.x = robo.getCentro().x;
-		target.y = robo.getCentro().y;
+		target = robo.getCentroAtualRobo();
 		// Sorteia um angulo.
 		Vector2D v(distTarget, 0);
 		v = v.rotateLeft(float((double(rand()) / RAND_MAX) * 2 * M_PI));
@@ -288,7 +133,12 @@ public:
 	 * @param rewards vector to put the rewards in.
 	 */
 	void getReward(Vector& rewards) {
-		rewards[0] = reward;
+		if (onTarget) {
+			onTarget = false;
+			rewards[0] = 1.0;
+		} else {
+			rewards[0] = -1.0;
+		}
 	}
 
 	/**
@@ -359,63 +209,52 @@ public:
 		int right = a % 3;
 
 		if (left == 1)
-			robo.decVelLeft();
+			robo.diminuiVelocidadeMotorEsquerdo();
 		else if (left == 2)
-			robo.incVelLeft();
+			robo.aumentaVelocidadeMotorEsquerdo();
 
 		if (right == 1)
-			robo.decVelRight();
+			robo.diminuiVelocidadeDireitoRobo();
 		else if (right == 2)
-			robo.incVelRight();
+			robo.aumentaVelocidadeDireitoRobo();
+
+		robo.traduzirComandos();
+		com.enviaDadosRobo(estrategia.getteam());
 
 		// Captura novo estado (visao) e atualiza estado interno do simulador.
 		atualizaEstado();
 
-		// Centro e frente do robô sendo treinado.
-		CvPoint centroRobo;
-		centroRobo.x = robo.getCentro().x;
-		centroRobo.y = robo.getCentro().y;
-		CvPoint frenteRobo;
-		frenteRobo.x = robo.getFrente().x;
-		frenteRobo.y = robo.getFrente().y;
+		// Centro do robô sendo treinado.
+		const CvPoint& centroRobo = robo.getCentroAtualRobo();
+		const CvPoint& frenteRobo = robo.getFrenteRobo();
 
 		// Exibe target.
-		CvPoint um, dois;
-		um.x = um.y = 0;
-		dois.x = 640;
-		dois.y = 480;
-		cvRectangle(frame, um, dois, cvScalar(0, 0, 0), -1, 1, 0);
-		cvCircle(frame, target, 5, cvScalar(0, 255, 0), -1, 1, 0);
-		cvCircle(frame, centroRobo, 5, cvScalar(255, 0, 0), -1, 1, 0);
-		cvLine(frame, centroRobo, frenteRobo, cvScalar(255, 0, 0), 3, 1, 0);
+		cvCircle(visao.frame, target, 0, cvScalar(255, 0, 0), 10, 1, 0);
+		cvCircle(visao.frame, centroRobo, 0, cvScalar(0, 255, 0), 10, 1, 0);
 
 		// Desenha figura.
-		cvShowImage("Color", frame);
+		cvShowImage("Color", visao.frame);
 
 		// Verifica se chegou no target.
 		if (abs(target.x - centroRobo.x) < MoveRLSimulator::TOL
 				&& abs(target.y == centroRobo.y) < MoveRLSimulator::TOL) {
-			reward = 1.0;
-
-			/* Condicao de parada (tecla esc) */
-			if (cvWaitKey(500) > 0) {
-				if ((cvWaitKey() & 255) == 27)
-					exit(1);
-			}
-
+			// Sinaliza para getReward().
+			onTarget = true;
 			// Gera nova target.
 			geraTarget();
+		}
 
-			// Sinaliza final do episódio.
+		// Limpa a imagem.
+		visao.centroPontos.limpaTabelaCor();
+
+		/* Condicao de parada (tecla esc) */
+		if ((cvWaitKey(10) & 255) == 27) {
+			geraTarget();
 			return 1;
 		}
 
-		if (cvWaitKey(50) > 0) {
-			if ((cvWaitKey() & 255) == 27)
-				exit(1);
-		}
-
-		reward = -1.0;
+		if (onTarget)
+			return 1;
 		return 0; // This indicates goal state not encountered.
 		// Always return 0 for infinite horizon.
 		// This actually won't be checked by TemplateRLApp
@@ -424,15 +263,11 @@ public:
 
 	void atualizaEstado() {
 		// Captura frame e o processa.
-		robo.move();
+		visao.captura();
 
-		// Centro e frente do robô sendo treinado.
-		CvPoint centroRobo;
-		centroRobo.x = robo.getCentro().x;
-		centroRobo.y = robo.getCentro().y;
-		CvPoint frenteRobo;
-		frenteRobo.x = robo.getFrente().x;
-		frenteRobo.y = robo.getFrente().y;
+		// Centro do robô sendo treinado.
+		const CvPoint& centroRobo = robo.getCentroAtualRobo();
+		const CvPoint& frenteRobo = robo.getFrenteRobo();
 
 		// Atualiza estado (observation).
 		double angToTargetNew = produtoEscalar(frenteRobo, centroRobo,
@@ -531,4 +366,4 @@ public:
 
 };
 
-#endif /* MOVERLSIMULATOR_HPP_ */
+#endif /* MOVERLINTERFACE_HPP_ */

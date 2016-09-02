@@ -17,15 +17,19 @@
 #include <iostream>
 
 #include <PGBasics.hh>
+#include <NeuralNet.hh>
 #include <NeuralNetBatch.hh>
 #include <LSTDQController.hh>
 #include <OLPomdp.hh>
 #include <GOALPomdp.hh>
+#include <GPomdp.hh>
 #include <eGreedyPolicy.hh>
-
-#include "MoveRLSimulator.hpp"
+#include <NACTransform.hh>
+#include <BasicController.hh>
 
 #include <boost/program_options.hpp>
+
+#include "MoveRLSimulator.hpp"
 
 namespace po = boost::program_options;
 
@@ -122,7 +126,7 @@ int main(int argc, char* argv[]) {
 	("tamArena", po::value<int>(&tamArena)->default_value(600),
 			"Tamanho da arena (largura e comprimento")
 	//
-	("discFactor", po::value<double>(&discountFactor)->default_value(1.0),
+	("discFactor", po::value<double>(&discountFactor)->default_value(0.9),
 			"discount factor for rewards (to form the expected return)")
 	//
 	("velMaxMotor", po::value<int>(&velMaxMotor)->default_value(1),
@@ -150,17 +154,17 @@ int main(int argc, char* argv[]) {
 			toleranciaAlvo, tamArena, discountFactor, velMaxMotor, passoMotor);
 
 	// STEP 2. Create linear approximator (see documentation to change this to a multi-layer perceptron)
-	Approximator* neuralNet = new NeuralNetBatch(moveSimulator->getObsRows(),
+	Approximator* neuralNet = new NeuralNet(moveSimulator->getObsRows(),
 			moveSimulator->getNumActions());
 
 	// STEP 3. Create a controller (implement different algorithms here)
 	Controller* controller;
 	// Create Natural Actor-Critic controller
-	// controller = new NACTransform(new BasicController(neuralNet), mySimulator->getDiscountFactor());
+	controller = new NACTransform(new BasicController(neuralNet), moveSimulator->getDiscountFactor());
 	// Create LSPI controller
-	controller = new LSTDQController(neuralNet,
-			new eGreedyPolicy(explorationProb),
-			moveSimulator->getDiscountFactor());
+	// controller = new LSTDQController(neuralNet,
+	//		new eGreedyPolicy(explorationProb),
+	//		moveSimulator->getDiscountFactor());
 
 	// STEP 4. Link all together with an algorithm
 	RLAlg* alg = new GOALPomdp(controller, moveSimulator, lambda, stepSize);

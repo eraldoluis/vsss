@@ -69,6 +69,22 @@ public:
 	 */
 	void move(float passo = 1.0);
 
+	bool setVelRight(int val) {
+		if (val >= -RoboSim::velMaxMotor && val <= RoboSim::velMaxMotor) {
+			velAngR = val;
+			return true;
+		}
+		return false;
+	}
+
+	bool setVelLeft(int val) {
+		if (val >= -RoboSim::velMaxMotor && val <= RoboSim::velMaxMotor) {
+			velAngL = val;
+			return true;
+		}
+		return false;
+	}
+
 	bool incVelRight() {
 		if (velAngR < RoboSim::velMaxMotor) {
 			++velAngR;

@@ -10,7 +10,7 @@
 #include <cmath>
 
 int RoboSim::velMaxMotor = 1;
-double RoboSim::passoMotor = 1.0/8;
+double RoboSim::passoMotor = 1.0 / 8;
 
 /*******************************************************************************
  * Auxiliary functions.
@@ -47,7 +47,8 @@ RoboSim::RoboSim(int raio, const Point2f& centro, const Rect& limiteCentro) :
 		centro(centro), frente(centro.x, centro.y + raio), raio(raio), velAngL(
 				0), velAngR(0), limiteCentro(limiteCentro) {
 	// Rotaciona frente aleatoriamente.
-	rot(frente, centro, float(rand() * 2 * M_PI / RAND_MAX));
+	// TODO test
+	// rot(frente, centro, float(rand() * 2 * M_PI / RAND_MAX));
 }
 
 void RoboSim::move(float passo) {
@@ -71,12 +72,14 @@ void RoboSim::move(float passo) {
 
 	// Verifica limites.
 	if (limiteCentro.contains(centro)) {
+		// Normaliza o vetor (frente - centro) para manter norma igual ao raio.
 		frente -= centro;
 		float l = norm(frente);
 		frente *= (raio / l);
 		frente += centro;
-		this->frente = frente;
-		this->centro = centro;
+		// TODO teste
+		this->frente.y = frente.y;
+		this->centro.y = centro.y;
 	}
 }
 
@@ -95,14 +98,15 @@ MoveRLSimulator::MoveRLSimulator(bool useUI, int raioRobo, int toleranciaAlvo,
 	RoboSim::passoMotor = passoMotor;
 
 	limiteCentroRobo = arena;
-	limiteCentroRobo.x += robo.getRaio();
-	limiteCentroRobo.y += robo.getRaio();
-	limiteCentroRobo.width -= 2 * robo.getRaio();
-	limiteCentroRobo.height -= 2 * robo.getRaio();
+	limiteCentroRobo.x += raioRobo;
+	limiteCentroRobo.y += raioRobo;
+	limiteCentroRobo.width -= 2 * raioRobo;
+	limiteCentroRobo.height -= 2 * raioRobo;
 
 	// Posiciona robo no centro da arena.
 	robo = RoboSim(raioRobo, Point2f(tamArena / 2, tamArena / 2),
 			limiteCentroRobo);
+
 	// Gera primeiro target.
 	geraTarget();
 
@@ -115,21 +119,10 @@ MoveRLSimulator::MoveRLSimulator(bool useUI, int raioRobo, int toleranciaAlvo,
 MoveRLSimulator::~MoveRLSimulator() {
 }
 
-void MoveRLSimulator::geraTarget() {
-	do {
-		// Gera primeiro target.
-		target.x = robo.getCentro().x;
-		target.y = robo.getCentro().y;
-		// Sorteia um angulo.
-		Vector2D v(distTarget, 0);
-		v = v.rotateLeft(float((double(rand()) / RAND_MAX) * 2 * M_PI));
-		target.x += v.x;
-		target.y += v.y;
-	} while (!limiteCentroRobo.contains(target));
-}
-
-void MoveRLSimulator::getReward(libpg::Vector& rewards) {
-	rewards[0] = reward;
+int MoveRLSimulator::getObsRows() {
+	// TODO test
+	//return 10;
+	return 3;
 }
 
 void MoveRLSimulator::getObservation(Observation& obs) {
@@ -139,10 +132,17 @@ void MoveRLSimulator::getObservation(Observation& obs) {
 
 	myObs.clear();
 	myObs(0, 0) = 1;
-	myObs(1, 0) = angToTarget;
-	myObs(2, 0) = distToTarget;
-	myObs(3, 0) = angSpeed;
-	myObs(4, 0) = spatialSpeed;
+	// TODO teste
+	// myObs(1, 0) = angToTarget;
+	myObs(1, 0) = (robo.getCentro().y <= target.y);
+	myObs(2, 0) = (robo.getCentro().y > target.y);
+//	myObs(2, 0) = distToTarget;
+//	myObs(3, 0) = angSpeed;
+//	myObs(4, 0) = spatialSpeed;
+//	// Square features.
+//	for (int i = 1; i <= 4; ++i)
+//		myObs(i + 4, 0) = myObs(i, 0) * myObs(i, 0);
+//	myObs(9, 0) = myObs(1, 0) * distToTarget;
 
 	// Note, don't do anything that affects the state of the
 	// simulator. You never know if getObservation() will
@@ -150,25 +150,38 @@ void MoveRLSimulator::getObservation(Observation& obs) {
 
 }
 
+int MoveRLSimulator::getNumActions() {
+	// TODO test
+	// return 9;
+	return 3;
+}
+
 int MoveRLSimulator::doAction(libpg::Vector& action) {
 
 	int a = (int) action[0];
 
 	/* Altera estado do robo de acordo com a action. */
-	int left = a / 3;
-	int right = a % 3;
-
-	if (left == 1)
-		robo.decVelLeft();
-	else if (left == 2)
+//	int left = a / 3;
+//	int right = a % 3;
+//
+//	if (left == 1)
+//		robo.decVelLeft();
+//	else if (left == 2)
+//		robo.incVelLeft();
+//
+//	if (right == 1)
+//		robo.decVelRight();
+//	else if (right == 2)
+//		robo.incVelRight();
+	if (a == 1) {
 		robo.incVelLeft();
-
-	if (right == 1)
-		robo.decVelRight();
-	else if (right == 2)
 		robo.incVelRight();
+	} else if (a == 2) {
+		robo.decVelLeft();
+		robo.decVelRight();
+	}
 
-	// Captura novo estado (visao) e atualiza estado interno do simulador.
+	// Atualiza estado interno do simulador.
 	atualizaEstado();
 
 	// Centro e frente do robô sendo treinado.
@@ -244,11 +257,14 @@ int MoveRLSimulator::doAction(libpg::Vector& action) {
 }
 
 void MoveRLSimulator::atualizaEstado() {
-	// Captura frame e o processa.
+	/*
+	 * Atualiza o estado do robô de acordo com o estado de seus motores e seu
+	 * estado atual.
+	 */
 	robo.move();
 
 	/*
-	 * Atualiza estado (observation).
+	 * Atualiza estado observado (observation).
 	 */
 
 	// Ângulo entre frente do robô e o target (temporário).
@@ -257,7 +273,8 @@ void MoveRLSimulator::atualizaEstado() {
 	double angToTargetNew = atan2f(vecTarget.y, vecTarget.x)
 			- atan2f(vecFrente.y, vecFrente.x);
 	// Distância para o target (temporário).
-	double distToTargetNew = norm(robo.getCentro() - target);
+	double distToTargetNew = norm(robo.getCentro() - target)
+			/ max(arena.height, arena.width);
 	// Velocidade angular do robô.
 	angSpeed = angToTargetNew - angToTarget;
 	// Velocidade linear.
@@ -268,12 +285,18 @@ void MoveRLSimulator::atualizaEstado() {
 	distToTarget = distToTargetNew;
 }
 
-int MoveRLSimulator::getObsRows() {
-	return 5;
-}
-
-int MoveRLSimulator::getNumActions() {
-	return 9;
+void MoveRLSimulator::geraTarget() {
+	do {
+		// Gera primeiro target.
+		target.x = robo.getCentro().x;
+		target.y = robo.getCentro().y + (rand() % 2 ? distTarget : -distTarget);
+		// Sorteia um angulo.
+		// TODO test
+//		Vector2D v(distTarget, 0);
+//		v = v.rotateLeft(float((double(rand()) / RAND_MAX) * 2 * M_PI));
+//		target.x += v.x;
+//		target.y += v.y;
+	} while (!limiteCentroRobo.contains(target));
 }
 
 double MoveRLSimulator::getDiscountFactor() {
@@ -298,4 +321,8 @@ int MoveRLSimulator::getObsCols() {
 
 int MoveRLSimulator::getActionDim() {
 	return getAgents();
+}
+
+void MoveRLSimulator::getReward(libpg::Vector& rewards) {
+	rewards[0] = reward;
 }
